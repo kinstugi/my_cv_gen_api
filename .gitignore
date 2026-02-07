@@ -1,0 +1,55 @@
+# Build
+bin/
+obj/
+out/
+publish/
+
+# IDE
+.idea/
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# .NET
+project.lock.json
+project.fragment.lock.json
+artifacts/
+*.nupkg
+*.snupkg
+.nuget/packages/
+packages/
+
+# User secrets
+secrets.json
+*.pfx
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Test
+TestResults/
+coverage/
+*.trx
+*.coverage
+*.coveragexml
+
+# Docker
+.docker/
+
+# Misc
+*.swp
+*~
+*.orig

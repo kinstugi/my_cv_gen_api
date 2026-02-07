@@ -1,0 +1,24 @@
+# Test environment: uses a separate database (my_cv_gen_api_test)
+# Usage: docker compose -f docker-compose.yml -f docker-compose.test.yml up -d
+# Or:    docker compose --profile test -f docker-compose.yml -f docker-compose.test.yml up -d
+
+services:
+  api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Testing
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=my_cv_gen_api_test;Username=postgres;Password=${POSTGRES_PASSWORD:-postgres}"
+      Redis__Configuration: "redis:6379"
+
+  db:
+    environment:
+      POSTGRES_DB: my_cv_gen_api_test
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+
+  redis:
+    volumes:
+      - redis_test_data:/data
+
+volumes:
+  postgres_test_data:
+  redis_test_data:

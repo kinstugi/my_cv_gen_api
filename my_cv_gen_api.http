@@ -1,0 +1,6 @@
+@my_cv_gen_api_HostAddress = http://localhost:5074
+
+GET {{my_cv_gen_api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
