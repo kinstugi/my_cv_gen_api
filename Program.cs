@@ -3,7 +3,12 @@ using my_cv_gen_api.Data;
 using my_cv_gen_api.Repositories;
 using my_cv_gen_api.Services;
 
+// Use PORT from Render (or default 8080 for local/Docker)
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+var urls = $"http://0.0.0.0:{port}";
+
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseUrls(urls);
 
 // Add services to the container.
 builder.Services.AddOpenApi();
