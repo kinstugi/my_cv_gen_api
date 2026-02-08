@@ -99,6 +99,24 @@ using (var scope = app.Services.CreateScope())
         db.Database.ExecuteSqlRaw(@"CREATE INDEX ""IX_WorkExperiences_ResumeId"" ON ""WorkExperiences"" (""ResumeId"")");
         logger.LogInformation("Tables created successfully.");
     }
+    else
+    {
+        // Existing DB: add new columns to Resumes if they were added to the model after the table was created
+        var imageUrlExists = db.Database.SqlQueryRaw<bool>(
+            "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'Resumes' AND column_name = 'ImageUrl') AS \"Value\"").FirstOrDefault();
+        if (!imageUrlExists)
+        {
+            logger.LogInformation("Adding ImageUrl column to Resumes table...");
+            db.Database.ExecuteSqlRaw(@"ALTER TABLE ""Resumes"" ADD COLUMN ""ImageUrl"" varchar(500) NULL");
+        }
+        var isActiveExists = db.Database.SqlQueryRaw<bool>(
+            "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'Resumes' AND column_name = 'IsActive') AS \"Value\"").FirstOrDefault();
+        if (!isActiveExists)
+        {
+            logger.LogInformation("Adding IsActive column to Resumes table...");
+            db.Database.ExecuteSqlRaw(@"ALTER TABLE ""Resumes"" ADD COLUMN ""IsActive"" boolean NOT NULL DEFAULT true");
+        }
+    }
 
     try
     {
