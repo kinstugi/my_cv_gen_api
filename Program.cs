@@ -48,6 +48,18 @@ if (string.IsNullOrEmpty(connectionString))
         throw new InvalidOperationException("ConnectionStrings:DefaultConnection is required. Set ConnectionStrings__DefaultConnection on Render.");
     connectionString = "Host=localhost;Port=5432;Database=my_cv_gen_api;Username=postgres;Password=postgres";
 }
+// Render (and others) often provide postgresql:// URL; Npgsql needs key=value format
+else if (connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase) ||
+         connectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase))
+{
+    var uri = new Uri(connectionString);
+    var userPass = uri.UserInfo?.Split(':', 2) ?? [];
+    var user = userPass.Length > 0 ? Uri.UnescapeDataString(userPass[0]) : "";
+    var pass = userPass.Length > 1 ? Uri.UnescapeDataString(userPass[1]) : "";
+    var db = uri.AbsolutePath.TrimStart('/');
+    var dbPort = uri.Port > 0 ? uri.Port : 5432;
+    connectionString = $"Host={uri.Host};Port={dbPort};Database={db};Username={user};Password={pass};SSL Mode=Require;";
+}
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
