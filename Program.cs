@@ -93,7 +93,7 @@ using (var scope = app.Services.CreateScope())
 
     // Fallback: if no migrations were in the assembly (e.g. Migrations folder not in Docker build), create schema from model
     var usersTableExists = db.Database.SqlQueryRaw<bool>(
-        "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'Users')").FirstOrDefault();
+        "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'Users') AS \"Value\"").FirstOrDefault();
     if (!usersTableExists)
     {
         logger.LogWarning("Users table not found. Creating database schema from model (EnsureCreated).");
