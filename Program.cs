@@ -74,6 +74,13 @@ if (!string.IsNullOrEmpty(redisConnection))
 
 var app = builder.Build();
 
+// Apply pending EF Core migrations (creates/updates tables on Render and elsewhere)
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
