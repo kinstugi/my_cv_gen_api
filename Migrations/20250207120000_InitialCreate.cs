@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace my_cv_gen_api.Migrations
 {
     /// <inheritdoc />
+    [Migration("20250207120000_InitialCreate")]
     public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
