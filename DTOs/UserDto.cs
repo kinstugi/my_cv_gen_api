@@ -24,3 +24,9 @@ public class UserResponseDto
     public DateTime UpdatedAt { get; set; }
     public bool IsActive { get; set; }
 }
+
+public class AuthResponseDto
+{
+    public string Token { get; set; } = string.Empty;
+    public UserResponseDto User { get; set; } = null!;
+}

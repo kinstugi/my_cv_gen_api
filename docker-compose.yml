@@ -13,6 +13,7 @@ services:
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=my_cv_gen_api;Username=postgres;Password=${POSTGRES_PASSWORD:-postgres}"
       Redis__Configuration: "redis:6379"
+      Jwt__Key: ${JWT_SECRET:-your-super-secret-key-at-least-32-characters-long-for-hs256}
     depends_on:
       db:
         condition: service_healthy

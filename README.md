@@ -23,9 +23,12 @@ A .NET 9 Web API for CV/Resume generation with user authentication, PostgreSQL, 
 - **Connection string**: Set in `appsettings.Development.json` (default: `localhost:5432`, database `my_cv_gen_api`)
 - **Redis**: `localhost:6379` (optional; caching is disabled if not configured)
 
-### Environment Variables (Docker)
+### Environment Variables (Docker / Render)
 
 - `POSTGRES_PASSWORD` – PostgreSQL password (default: `postgres`)
+- `Jwt__Key` – JWT signing key (min 32 characters for HS256); required for auth
+- `Jwt__Issuer` – JWT issuer (default: `my_cv_gen_api`)
+- `Jwt__Audience` – JWT audience (default: `my_cv_gen_api`)
 
 ## Running the API
 
@@ -61,8 +64,10 @@ dotnet run
 
 | Method | Endpoint        | Description              |
 |--------|-----------------|--------------------------|
-| POST   | `/api/auth/register` | Register a new user      |
-| POST   | `/api/auth/login`    | Login (returns UserResponseDto) |
+| POST   | `/api/auth/register` | Register a new user; returns JWT + UserResponseDto |
+| POST   | `/api/auth/login`    | Login; returns JWT + UserResponseDto |
+
+Protected endpoints require `Authorization: Bearer <token>` header.
 
 ### OpenAPI
 
