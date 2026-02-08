@@ -74,7 +74,7 @@ if (!string.IsNullOrEmpty(redisConnection))
 
 var app = builder.Build();
 
-// Apply pending EF Core migrations (creates/updates tables on Render and elsewhere)
+// Ensure database schema exists (migrations if present, otherwise EnsureCreated for Docker/Render when Migrations aren't in the build)
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -89,6 +89,15 @@ using (var scope = app.Services.CreateScope())
     {
         logger.LogError(ex, "Failed to apply database migrations.");
         throw;
+    }
+
+    // Fallback: if no migrations were in the assembly (e.g. Migrations folder not in Docker build), create schema from model
+    var usersTableExists = db.Database.SqlQueryRaw<bool>(
+        "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'Users')").FirstOrDefault();
+    if (!usersTableExists)
+    {
+        logger.LogWarning("Users table not found. Creating database schema from model (EnsureCreated).");
+        db.Database.EnsureCreated();
     }
 }
 
