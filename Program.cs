@@ -86,7 +86,7 @@ using (var scope = app.Services.CreateScope())
     {
         logger.LogWarning("Users table not found. Creating tables via SQL...");
         db.Database.ExecuteSqlRaw(@"CREATE TABLE ""Users"" (""Id"" serial PRIMARY KEY, ""FirstName"" varchar(100) NOT NULL, ""LastName"" varchar(100) NOT NULL, ""Email"" varchar(256) NOT NULL, ""PasswordHash"" bytea NOT NULL, ""PasswordSalt"" bytea NOT NULL, ""CreatedAt"" timestamptz NOT NULL, ""UpdatedAt"" timestamptz NOT NULL, ""IsActive"" boolean NOT NULL)");
-        db.Database.ExecuteSqlRaw(@"CREATE TABLE ""Resumes"" (""Id"" serial PRIMARY KEY, ""UserId"" integer NOT NULL REFERENCES ""Users""(""Id"") ON DELETE CASCADE, ""Title"" varchar(200) NOT NULL, ""Description"" text NOT NULL, ""Skills"" jsonb NOT NULL DEFAULT '[]', ""CreatedAt"" timestamptz NOT NULL, ""UpdatedAt"" timestamptz NOT NULL)");
+        db.Database.ExecuteSqlRaw(@"CREATE TABLE ""Resumes"" (""Id"" serial PRIMARY KEY, ""UserId"" integer NOT NULL REFERENCES ""Users""(""Id"") ON DELETE CASCADE, ""Title"" varchar(200) NOT NULL, ""Description"" text NOT NULL, ""Skills"" jsonb NOT NULL DEFAULT '[]', ""CreatedAt"" timestamptz NOT NULL, ""UpdatedAt"" timestamptz NOT NULL, ""IsActive"" boolean NOT NULL DEFAULT true, ""ImageUrl"" varchar(500) NULL)");
         db.Database.ExecuteSqlRaw(@"CREATE INDEX ""IX_Resumes_UserId"" ON ""Resumes"" (""UserId"")");
         db.Database.ExecuteSqlRaw(@"CREATE TABLE ""Educations"" (""Id"" serial PRIMARY KEY, ""ResumeId"" integer NOT NULL REFERENCES ""Resumes""(""Id"") ON DELETE CASCADE, ""School"" varchar(200) NOT NULL, ""Degree"" varchar(100) NOT NULL, ""FieldOfStudy"" varchar(200) NOT NULL, ""StartDate"" timestamptz NOT NULL, ""EndDate"" timestamptz NULL)");
         db.Database.ExecuteSqlRaw(@"CREATE INDEX ""IX_Educations_ResumeId"" ON ""Educations"" (""ResumeId"")");
@@ -94,7 +94,7 @@ using (var scope = app.Services.CreateScope())
         db.Database.ExecuteSqlRaw(@"CREATE INDEX ""IX_Languages_ResumeId"" ON ""Languages"" (""ResumeId"")");
         db.Database.ExecuteSqlRaw(@"CREATE TABLE ""Projects"" (""Id"" serial PRIMARY KEY, ""ResumeId"" integer NOT NULL REFERENCES ""Resumes""(""Id"") ON DELETE CASCADE, ""Title"" varchar(200) NOT NULL, ""Description"" text NOT NULL, ""Link"" varchar(500) NULL, ""CreatedAt"" timestamptz NOT NULL, ""UpdatedAt"" timestamptz NOT NULL)");
         db.Database.ExecuteSqlRaw(@"CREATE INDEX ""IX_Projects_ResumeId"" ON ""Projects"" (""ResumeId"")");
-        db.Database.ExecuteSqlRaw(@"CREATE TABLE ""WorkExperiences"" (""Id"" serial PRIMARY KEY, ""ResumeId"" integer NOT NULL REFERENCES ""Resumes""(""Id"") ON DELETE CASCADE, ""Company"" varchar(200) NOT NULL, ""Position"" varchar(200) NOT NULL, ""Description"" text NOT NULL, ""StartDate"" timestamptz NOT NULL, ""EndDate"" timestamptz NULL)");
+        db.Database.ExecuteSqlRaw(@"CREATE TABLE ""WorkExperiences"" (""Id"" serial PRIMARY KEY, ""ResumeId"" integer NOT NULL REFERENCES ""Resumes""(""Id"") ON DELETE CASCADE, ""Company"" varchar(200) NOT NULL, ""Position"" varchar(200) NOT NULL, ""Description"" text NOT NULL, ""StartDate"" timestamptz NOT NULL, ""EndDate"" timestamptz NULL, ""IsCurrent"" boolean NOT NULL DEFAULT false)");
         db.Database.ExecuteSqlRaw(@"CREATE INDEX ""IX_WorkExperiences_ResumeId"" ON ""WorkExperiences"" (""ResumeId"")");
         logger.LogInformation("Tables created successfully.");
     }
