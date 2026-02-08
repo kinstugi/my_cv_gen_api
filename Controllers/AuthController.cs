@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using my_cv_gen_api.DTOs;
 using my_cv_gen_api.Repositories;
+using my_cv_gen_api.Services;
 
 namespace my_cv_gen_api.Controllers;
 
