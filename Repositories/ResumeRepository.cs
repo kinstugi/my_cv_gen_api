@@ -10,8 +10,9 @@ public interface IResumeRepository
 {
     Task<Resume> CreateResumeAsync(ResumeCreateDto dto, int userId);
     Task<Resume?> GetResumeByIdAsync(int id);
-    Task<Resume> UpdateResumeAsync(int id, ResumeUpdateDto dto);
-    Task<Resume?> DeleteResumeAsync(int id);
+    Task<Resume> UpdateResumeAsync(int id, ResumeUpdateDto dto, int userId);
+    Task<Resume?> DeleteResumeAsync(int id, int userId);
+    Task<List<Resume>> GetResumesByUserIdAsync(int userId, int page, int pageSize);
 }
 
 public class ResumeRepository : IResumeRepository
@@ -51,10 +52,10 @@ public class ResumeRepository : IResumeRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<Resume> UpdateResumeAsync(int id, ResumeUpdateDto dto)
+    public async Task<Resume> UpdateResumeAsync(int id, ResumeUpdateDto dto, int userId)
     {
         var resume = await _context.Resumes.FindAsync(id);
-        if (resume is null)
+        if (resume is null || resume.UserId != userId)
         {
             throw new NotFoundException("Resume not found");
         }
@@ -68,13 +69,23 @@ public class ResumeRepository : IResumeRepository
         return resume;
     }
 
-    public async Task<Resume?> DeleteResumeAsync(int id)
+    public async Task<Resume?> DeleteResumeAsync(int id, int userId)
     {
         var resume = await _context.Resumes.FindAsync(id);
-        if (resume is null) return null;
+        if (resume is null || resume.UserId != userId)
+            return null;
         resume.IsActive = false;
         resume.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
         return resume;
+    }
+
+    public async Task<List<Resume>> GetResumesByUserIdAsync(int userId, int page, int pageSize)
+    {
+        return await _context.Resumes
+            .Where(r => r.UserId == userId && r.IsActive)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
     }
 }
