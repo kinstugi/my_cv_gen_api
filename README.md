@@ -1,12 +1,13 @@
 # My CV Gen API
 
-A .NET 9 Web API for CV/Resume generation with user authentication, PostgreSQL, and Redis caching.
+A .NET 9 Web API for CV/Resume generation with user authentication (JWT), PostgreSQL, and Redis caching. Users can register, log in, and manage their own resumes (create, read, update, soft delete).
 
 ## Tech Stack
 
 - .NET 9
 - ASP.NET Core Web API
-- PostgreSQL (via Entity Framework Core)
+- JWT (Bearer) authentication
+- PostgreSQL (Entity Framework Core)
 - Redis (distributed caching)
 - Docker & Docker Compose
 
@@ -20,13 +21,15 @@ A .NET 9 Web API for CV/Resume generation with user authentication, PostgreSQL, 
 
 ### Local Development
 
-- **Connection string**: Set in `appsettings.Development.json` (default: `localhost:5432`, database `my_cv_gen_api`)
-- **Redis**: `localhost:6379` (optional; caching is disabled if not configured)
+- **Connection string**: `appsettings.Development.json` (default: `localhost:5432`, database `my_cv_gen_api`)
+- **Redis**: `localhost:6379` (optional; caching disabled if not set)
+- **JWT**: Set `Jwt:Key` (min 32 characters) in `appsettings.Development.json`
 
 ### Environment Variables (Docker / Render)
 
-- `POSTGRES_PASSWORD` – PostgreSQL password (default: `postgres`)
-- `Jwt__Key` – JWT signing key (min 32 characters for HS256); required for auth
+- `ConnectionStrings__DefaultConnection` – PostgreSQL connection string (required on Render; use Internal Database URL)
+- `POSTGRES_PASSWORD` – PostgreSQL password for Docker Compose (default: `postgres`)
+- `Jwt__Key` – JWT signing key (min 32 characters); required for auth
 - `Jwt__Issuer` – JWT issuer (default: `my_cv_gen_api`)
 - `Jwt__Audience` – JWT audience (default: `my_cv_gen_api`)
 
@@ -60,24 +63,39 @@ dotnet run
 
 ## API Endpoints
 
-### Auth
+### Auth (no token required)
 
-| Method | Endpoint        | Description              |
-|--------|-----------------|--------------------------|
-| POST   | `/api/auth/register` | Register a new user; returns JWT + UserResponseDto |
-| POST   | `/api/auth/login`    | Login; returns JWT + UserResponseDto |
+| Method | Endpoint              | Description |
+|--------|------------------------|-------------|
+| POST   | `/api/auth/register`   | Register; body: `firstName`, `lastName`, `email`, `password`. Returns JWT + user. |
+| POST   | `/api/auth/login`      | Login; body: `email`, `password`. Returns JWT + user. Invalid credentials → 404. |
 
-Protected endpoints require `Authorization: Bearer <token>` header.
+### Resumes (require `Authorization: Bearer <token>`)
+
+| Method | Endpoint           | Description |
+|--------|--------------------|-------------|
+| GET    | `/api/resumes`     | List current user's active resumes (query: `page`, `pageSize`) |
+| GET    | `/api/resumes/{id}`| Get resume by id (active only) |
+| POST   | `/api/resumes`     | Create a resume for the current user |
+| PUT    | `/api/resumes/{id}`| Update a resume (only if owned by current user) |
+| DELETE | `/api/resumes/{id}`| Soft-delete a resume (only if owned by current user) |
+
+### Other
+
+| Method | Endpoint  | Description     |
+|--------|-----------|-----------------|
+| GET    | `/health` | Health check    |
 
 ### OpenAPI
 
-When running in Development, OpenAPI docs are available at `/openapi/v1.json`.
+In Development, OpenAPI is available at `/openapi/v1.json`.
 
 ## Project Structure
 
-- `Controllers/` – API controllers
+- `Controllers/` – Auth and Resume API controllers
 - `Data/` – DbContext and EF configuration
-- `DTOs/` – Data transfer objects
-- `Models/` – Domain entities (User, Resume, Education, etc.)
-- `Repositories/` – Data access layer
-- `Services/` – Application services (e.g. password hashing)
+- `DTOs/` – Request/response DTOs (User, Resume, Education, WorkExperience, etc.)
+- `Exceptions/` – Custom exceptions (e.g. NotFoundException)
+- `Models/` – Domain entities (User, Resume, Education, WorkExperience, Project, Language)
+- `Repositories/` – Data access (UserRepository, ResumeRepository)
+- `Services/` – JWT generation, password hashing
