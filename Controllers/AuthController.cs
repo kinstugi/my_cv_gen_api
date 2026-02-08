@@ -22,7 +22,8 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login([FromBody] UserLoginDto userLoginDto)
     {
         var user = await _userRepository.LoginUserAsync(userLoginDto);
-        if (user is null) return Unauthorized();
+        if (user is null)
+            return NotFound(new { message = "Invalid email or password." });
         var token = _jwtService.GenerateToken(user);
         return Ok(new AuthResponseDto { Token = token, User = ToUserResponseDto(user) });
     }
