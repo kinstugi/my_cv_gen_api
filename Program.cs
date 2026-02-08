@@ -42,11 +42,14 @@ if (!string.IsNullOrEmpty(jwtKey))
 }
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (!string.IsNullOrEmpty(connectionString))
+if (string.IsNullOrEmpty(connectionString))
 {
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(connectionString));
+    if (builder.Environment.IsProduction())
+        throw new InvalidOperationException("ConnectionStrings:DefaultConnection is required. Set ConnectionStrings__DefaultConnection on Render.");
+    connectionString = "Host=localhost;Port=5432;Database=my_cv_gen_api;Username=postgres;Password=postgres";
 }
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
 
 var redisConnection = builder.Configuration["Redis:Configuration"] ?? builder.Configuration.GetConnectionString("Redis");
 if (!string.IsNullOrEmpty(redisConnection))
