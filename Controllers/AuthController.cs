@@ -31,9 +31,16 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserRegisterDto userRegisterDto)
     {
-        var user = await _userRepository.CreateUserAsync(userRegisterDto);
-        var token = _jwtService.GenerateToken(user);
-        return Ok(new AuthResponseDto { Token = token, User = ToUserResponseDto(user) });
+        try
+        {
+            var user = await _userRepository.CreateUserAsync(userRegisterDto);
+            var token = _jwtService.GenerateToken(user);
+            return Ok(new AuthResponseDto { Token = token, User = ToUserResponseDto(user) });
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("email already exists"))
+        {
+            return Conflict(new { message = "A user with this email already exists." });
+        }
     }
 
     private static UserResponseDto ToUserResponseDto(Models.User user) => new()
