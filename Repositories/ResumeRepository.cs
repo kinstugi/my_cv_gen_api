@@ -23,6 +23,21 @@ public class ResumeRepository : IResumeRepository
         _context = context;
     }
 
+    private static DateTime ToUtc(DateTime dateTime)
+    {
+        return dateTime.Kind switch
+        {
+            DateTimeKind.Utc => dateTime,
+            DateTimeKind.Local => dateTime.ToUniversalTime(),
+            _ => DateTime.SpecifyKind(dateTime, DateTimeKind.Utc) // Unspecified - assume UTC
+        };
+    }
+
+    private static DateTime? ToUtc(DateTime? dateTime)
+    {
+        return dateTime.HasValue ? ToUtc(dateTime.Value) : null;
+    }
+
     public async Task<Resume> CreateResumeAsync(ResumeCreateDto dto, int userId)
     {
         var now = DateTime.UtcNow;
@@ -45,8 +60,8 @@ public class ResumeRepository : IResumeRepository
                 Company = weDto.Company,
                 Position = weDto.Position,
                 Description = weDto.Description,
-                StartDate = weDto.StartDate,
-                EndDate = weDto.EndDate,
+                StartDate = ToUtc(weDto.StartDate),
+                EndDate = ToUtc(weDto.EndDate),
                 IsCurrent = weDto.IsCurrent,
                 Resume = resume
             });
@@ -60,8 +75,8 @@ public class ResumeRepository : IResumeRepository
                 School = eduDto.School,
                 Degree = eduDto.Degree,
                 FieldOfStudy = eduDto.FieldOfStudy,
-                StartDate = eduDto.StartDate,
-                EndDate = eduDto.EndDate,
+                StartDate = ToUtc(eduDto.StartDate),
+                EndDate = ToUtc(eduDto.EndDate),
                 Resume = resume
             });
         }
@@ -156,8 +171,8 @@ public class ResumeRepository : IResumeRepository
                     Company = weDto.Company,
                     Position = weDto.Position,
                     Description = weDto.Description,
-                    StartDate = weDto.StartDate,
-                    EndDate = weDto.EndDate,
+                    StartDate = ToUtc(weDto.StartDate),
+                    EndDate = ToUtc(weDto.EndDate),
                     IsCurrent = weDto.IsCurrent,
                     Resume = resume
                 });
@@ -176,8 +191,8 @@ public class ResumeRepository : IResumeRepository
                     School = eduDto.School,
                     Degree = eduDto.Degree,
                     FieldOfStudy = eduDto.FieldOfStudy,
-                    StartDate = eduDto.StartDate,
-                    EndDate = eduDto.EndDate,
+                    StartDate = ToUtc(eduDto.StartDate),
+                    EndDate = ToUtc(eduDto.EndDate),
                     Resume = resume
                 });
             }
