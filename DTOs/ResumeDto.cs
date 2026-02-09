@@ -18,6 +18,11 @@ public class ResumeUpdateDto
     public string Description { get; set; } = string.Empty;
     public string? ImageUrl { get; set; }
     public bool? IsActive { get; set; }
+    public List<WorkExperienceCreateDto>? WorkExperiences { get; set; }
+    public List<EducationCreateDto>? Educations { get; set; }
+    public List<LanguageCreateDto>? Languages { get; set; }
+    public List<ProjectCreateDto>? Projects { get; set; }
+    public List<string>? Skills { get; set; }
 }
 
 public class ResumeResponseDto
