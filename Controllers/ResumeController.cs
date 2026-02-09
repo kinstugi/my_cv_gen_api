@@ -121,7 +121,7 @@ public class ResumeController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetResumes(int page = 1, int pageSize = 10)
+    public async Task<IActionResult> GetResumes(int page = 1, int pageSize = 3)
     {
         var userId = GetCurrentUserId();
         if (userId is null) return Unauthorized();

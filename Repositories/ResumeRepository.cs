@@ -270,6 +270,10 @@ public class ResumeRepository : IResumeRepository
         return await _context.Resumes
             .Where(r => r.UserId == userId && r.IsActive)
             .OrderByDescending(r => r.UpdatedAt)
+            .Include(r => r.WorkExperiences)
+            .Include(r => r.Educations)
+            .Include(r => r.Languages)
+            .Include(r => r.Projects)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
