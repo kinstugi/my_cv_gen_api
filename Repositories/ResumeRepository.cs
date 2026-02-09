@@ -84,6 +84,7 @@ public class ResumeRepository : IResumeRepository
     {
         return await _context.Resumes
             .Where(r => r.UserId == userId && r.IsActive)
+            .OrderByDescending(r => r.UpdatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
