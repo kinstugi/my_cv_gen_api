@@ -116,6 +116,20 @@ using (var scope = app.Services.CreateScope())
             logger.LogInformation("Adding IsActive column to Resumes table...");
             db.Database.ExecuteSqlRaw(@"ALTER TABLE ""Resumes"" ADD COLUMN ""IsActive"" boolean NOT NULL DEFAULT true");
         }
+        
+        // Check if WorkExperiences table exists and add IsCurrent column if missing
+        var workExperiencesTableExists = db.Database.SqlQueryRaw<bool>(
+            "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'WorkExperiences') AS \"Value\"").FirstOrDefault();
+        if (workExperiencesTableExists)
+        {
+            var isCurrentExists = db.Database.SqlQueryRaw<bool>(
+                "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'WorkExperiences' AND column_name = 'IsCurrent') AS \"Value\"").FirstOrDefault();
+            if (!isCurrentExists)
+            {
+                logger.LogInformation("Adding IsCurrent column to WorkExperiences table...");
+                db.Database.ExecuteSqlRaw(@"ALTER TABLE ""WorkExperiences"" ADD COLUMN ""IsCurrent"" boolean NOT NULL DEFAULT false");
+            }
+        }
     }
 
     try
