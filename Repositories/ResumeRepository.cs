@@ -10,6 +10,7 @@ public interface IResumeRepository
 {
     Task<Resume> CreateResumeAsync(ResumeCreateDto dto, int userId);
     Task<Resume?> GetResumeByIdAsync(int id);
+    Task<Resume?> GetResumeByIdForOwnerAsync(int id, int userId);
     Task<Resume> UpdateResumeAsync(int id, ResumeUpdateDto dto, int userId);
     Task<Resume?> DeleteResumeAsync(int id, int userId);
     Task<List<Resume>> GetResumesByUserIdAsync(int userId, int page, int pageSize);
@@ -129,6 +130,18 @@ public class ResumeRepository : IResumeRepository
             .Include(r => r.Educations)
             .Include(r => r.Languages)
             .Include(r => r.Projects)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<Resume?> GetResumeByIdForOwnerAsync(int id, int userId)
+    {
+        return await _context.Resumes
+            .Where(r => r.Id == id && r.UserId == userId && r.IsActive)
+            .Include(r => r.WorkExperiences)
+            .Include(r => r.Educations)
+            .Include(r => r.Languages)
+            .Include(r => r.Projects)
+            .Include(r => r.User)
             .FirstOrDefaultAsync();
     }
 

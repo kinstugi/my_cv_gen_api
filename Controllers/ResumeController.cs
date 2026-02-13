@@ -5,6 +5,7 @@ using my_cv_gen_api.DTOs;
 using my_cv_gen_api.Exceptions;
 using my_cv_gen_api.Models;
 using my_cv_gen_api.Repositories;
+using my_cv_gen_api.Services;
 
 namespace my_cv_gen_api.Controllers;
 
@@ -14,10 +15,12 @@ namespace my_cv_gen_api.Controllers;
 public class ResumeController : ControllerBase
 {
     private readonly IResumeRepository _resumeRepository;
+    private readonly ICvPdfService _cvPdfService;
 
-    public ResumeController(IResumeRepository resumeRepository)
+    public ResumeController(IResumeRepository resumeRepository, ICvPdfService cvPdfService)
     {
         _resumeRepository = resumeRepository;
+        _cvPdfService = cvPdfService;
     }
 
     private int? GetCurrentUserId()
@@ -118,6 +121,21 @@ public class ResumeController : ControllerBase
         if (resume is null)
             return NotFound();
         return Ok(ToResumeResponseDto(resume));
+    }
+
+    [HttpGet("{id}/download")]
+    public async Task<IActionResult> DownloadResume(int id, [FromQuery] string? template = "template1")
+    {
+        var userId = GetCurrentUserId();
+        if (userId is null) return Unauthorized();
+
+        var resume = await _resumeRepository.GetResumeByIdForOwnerAsync(id, userId.Value);
+        if (resume is null)
+            return NotFound();
+
+        var pdfBytes = _cvPdfService.GeneratePdf(resume, resume.User, template);
+        var fileName = $"resume-{id}.pdf";
+        return File(pdfBytes, "application/pdf", fileName);
     }
 
     [HttpGet]
