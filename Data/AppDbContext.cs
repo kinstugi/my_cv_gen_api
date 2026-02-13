@@ -1,8 +1,24 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using my_cv_gen_api.Models;
 
 namespace my_cv_gen_api.Data;
+
+public class SkillsJsonConverter : ValueConverter<List<string>, string>
+{
+    public SkillsJsonConverter()
+        : base(ToJson, FromJson)
+    {
+    }
+
+    private static string ToJson(List<string> list) => JsonSerializer.Serialize(list);
+    private static List<string> FromJson(string json)
+    {
+        var list = JsonSerializer.Deserialize<List<string>>(json);
+        return list ?? new List<string>();
+    }
+}
 
 public class AppDbContext : DbContext
 {
@@ -52,9 +68,7 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<Resume>()
             .Property(r => r.Skills)
-            .HasConversion(
-                v => JsonSerializer.Serialize(v),
-                v => JsonSerializer.Deserialize<List<string>>(v) ?? [])
+            .HasConversion(new SkillsJsonConverter())
             .HasColumnType("jsonb");
     }
 }
