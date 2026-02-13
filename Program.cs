@@ -62,9 +62,7 @@ else if (connectionString.StartsWith("postgresql://", StringComparison.OrdinalIg
     var dbPort = uri.Port > 0 ? uri.Port : 5432;
     connectionString = $"Host={uri.Host};Port={dbPort};Database={db};Username={user};Password={pass};SSL Mode=Require;";
 }
-var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
-dataSourceBuilder.EnableDynamicJson();
-var dataSource = dataSourceBuilder.Build();
+var dataSource = new NpgsqlDataSourceBuilder(connectionString).Build();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(dataSource, npgsql => npgsql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 

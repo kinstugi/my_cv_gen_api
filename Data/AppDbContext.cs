@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using my_cv_gen_api.Models;
 
@@ -48,5 +49,12 @@ public class AppDbContext : DbContext
             .WithOne(p => p.Resume)
             .HasForeignKey("ResumeId")
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Resume>()
+            .Property(r => r.Skills)
+            .HasConversion(
+                v => JsonSerializer.Serialize(v),
+                v => JsonSerializer.Deserialize<List<string>>(v) ?? [])
+            .HasColumnType("jsonb");
     }
 }
