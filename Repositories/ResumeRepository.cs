@@ -241,6 +241,7 @@ public class ResumeRepository : IResumeRepository
             {
                 resume.Skills.Add(skill);
             }
+            _context.Entry(resume).Property(nameof(Resume.Skills)).IsModified = true;
         }
         
         await _context.SaveChangesAsync();
