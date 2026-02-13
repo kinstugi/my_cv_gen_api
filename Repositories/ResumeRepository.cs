@@ -107,10 +107,7 @@ public class ResumeRepository : IResumeRepository
         }
         
         // Add Skills
-        foreach (var skill in dto.Skills)
-        {
-            resume.Skills.Add(skill);
-        }
+        resume.Skills = dto.Skills.ToList();
         
         _context.Resumes.Add(resume);
         await _context.SaveChangesAsync();
@@ -236,12 +233,7 @@ public class ResumeRepository : IResumeRepository
         // Update Skills if provided
         if (dto.Skills is not null)
         {
-            resume.Skills.Clear();
-            foreach (var skill in dto.Skills)
-            {
-                resume.Skills.Add(skill);
-            }
-            _context.Entry(resume).Property(nameof(Resume.Skills)).IsModified = true;
+            resume.Skills = dto.Skills.ToList();
         }
         
         await _context.SaveChangesAsync();

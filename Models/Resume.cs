@@ -15,7 +15,7 @@ public class Resume
     public List<Language> Languages { get; } = new List<Language>();
     public List<Project> Projects { get; } = new List<Project>();
     public User User { get; set; } = null!;
-    public List<string> Skills { get; } = new List<string>();
+    public List<string> Skills { get; set; } = new List<string>();
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public bool IsActive { get; set; } = true;
