@@ -32,6 +32,8 @@ A .NET 9 Web API for CV/Resume generation with user authentication (JWT), Postgr
 - `Jwt__Key` – JWT signing key (min 32 characters); required for auth
 - `Jwt__Issuer` – JWT issuer (default: `my_cv_gen_api`)
 - `Jwt__Audience` – JWT audience (default: `my_cv_gen_api`)
+- `Tailor__ApiKey` – Google Gemini API key (required for CV tailor endpoint; get from [Google AI Studio](https://ai.google.dev/))
+- `Tailor__Model` – Gemini model (default: `gemini-2.0-flash`)
 
 ## Running the API
 
@@ -79,6 +81,8 @@ dotnet run
 | POST   | `/api/resumes`     | Create a resume for the current user |
 | PUT    | `/api/resumes/{id}`| Update a resume (only if owned by current user) |
 | DELETE | `/api/resumes/{id}`| Soft-delete a resume (only if owned by current user) |
+| GET    | `/api/resumes/{id}/download` | Download resume as PDF (query: `template` = template1–4) |
+| POST   | `/api/resumes/{id}/tailor` | Tailor resume to job description (body: `jobDescription`, `createNewCV` = false) |
 
 ### Other
 

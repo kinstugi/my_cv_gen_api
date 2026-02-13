@@ -22,6 +22,8 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IResumeRepository, ResumeRepository>();
 builder.Services.AddScoped<ICvPdfService, CvPdfService>();
+builder.Services.Configure<TailorOptions>(builder.Configuration.GetSection(TailorOptions.SectionName));
+builder.Services.AddScoped<IResumeTailorService, GeminiResumeTailorService>();
 
 var jwtKey = builder.Configuration["Jwt:Key"];
 if (!string.IsNullOrEmpty(jwtKey))

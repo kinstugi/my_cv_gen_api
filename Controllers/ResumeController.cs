@@ -16,11 +16,13 @@ public class ResumeController : ControllerBase
 {
     private readonly IResumeRepository _resumeRepository;
     private readonly ICvPdfService _cvPdfService;
+    private readonly IResumeTailorService _tailorService;
 
-    public ResumeController(IResumeRepository resumeRepository, ICvPdfService cvPdfService)
+    public ResumeController(IResumeRepository resumeRepository, ICvPdfService cvPdfService, IResumeTailorService tailorService)
     {
         _resumeRepository = resumeRepository;
         _cvPdfService = cvPdfService;
+        _tailorService = tailorService;
     }
 
     private int? GetCurrentUserId()
@@ -121,6 +123,42 @@ public class ResumeController : ControllerBase
         if (resume is null)
             return NotFound();
         return Ok(ToResumeResponseDto(resume));
+    }
+
+    [HttpPost("{id}/tailor")]
+    public async Task<IActionResult> TailorResume(int id, [FromBody] TailorRequestDto dto, CancellationToken cancellationToken = default)
+    {
+        var userId = GetCurrentUserId();
+        if (userId is null) return Unauthorized();
+
+        var resume = await _resumeRepository.GetResumeByIdForOwnerAsync(id, userId.Value);
+        if (resume is null)
+            return NotFound();
+
+        if (string.IsNullOrWhiteSpace(dto.JobDescription))
+            return BadRequest(new { error = "JobDescription is required." });
+
+        var tailoredDto = await _tailorService.TailorResumeAsync(resume, dto.JobDescription.Trim(), cancellationToken);
+
+        if (dto.CreateNewCV)
+        {
+            var newResume = await _resumeRepository.CreateResumeAsync(tailoredDto, userId.Value);
+            return Ok(ToResumeResponseDto(newResume));
+        }
+
+        var updateDto = new ResumeUpdateDto
+        {
+            Title = tailoredDto.Title,
+            Description = tailoredDto.Description,
+            ImageUrl = tailoredDto.ImageUrl,
+            WorkExperiences = tailoredDto.WorkExperiences,
+            Educations = tailoredDto.Educations,
+            Languages = tailoredDto.Languages,
+            Projects = tailoredDto.Projects,
+            Skills = tailoredDto.Skills
+        };
+        var updated = await _resumeRepository.UpdateResumeAsync(id, updateDto, userId.Value);
+        return Ok(ToResumeResponseDto(updated));
     }
 
     [HttpGet("{id}/download")]
