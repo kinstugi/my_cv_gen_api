@@ -8,7 +8,7 @@ namespace my_cv_gen_api.Data;
 public class SkillsJsonConverter : ValueConverter<List<string>, string>
 {
     public SkillsJsonConverter()
-        : base(ToJson, FromJson)
+        : base(v => ToJson(v), v => FromJson(v))
     {
     }
 
