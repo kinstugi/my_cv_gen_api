@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using my_cv_gen_api.Data;
 using my_cv_gen_api.Repositories;
 using my_cv_gen_api.Services;
+using Npgsql;
 
 // Use PORT from Render (or default 8080 for local/Docker)
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
@@ -61,8 +62,14 @@ else if (connectionString.StartsWith("postgresql://", StringComparison.OrdinalIg
     var dbPort = uri.Port > 0 ? uri.Port : 5432;
     connectionString = $"Host={uri.Host};Port={dbPort};Database={db};Username={user};Password={pass};SSL Mode=Require;";
 }
+var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+dataSourceBuilder.EnableDynamicJson();
+var dataSource = dataSourceBuilder.Build();
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+{
+    options.UseNpgsql(dataSource);
+    options.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+});
 
 var redisConnection = builder.Configuration["Redis:Configuration"] ?? builder.Configuration.GetConnectionString("Redis");
 if (!string.IsNullOrEmpty(redisConnection))
