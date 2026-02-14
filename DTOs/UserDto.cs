@@ -33,6 +33,16 @@ public class UserResponseDto
     public string? Website { get; set; }
 }
 
+public class UserProfileUpdateDto
+{
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public string? PhoneNumber { get; set; }
+    public string? GitHubUrl { get; set; }
+    public string? Location { get; set; }
+    public string? Website { get; set; }
+}
+
 public class AuthResponseDto
 {
     public string Token { get; set; } = string.Empty;
