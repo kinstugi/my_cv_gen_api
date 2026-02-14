@@ -1,30 +1,30 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using Google.GenAI;
-using Google.GenAI.Types;
+using GroqApiLibrary;
 using Microsoft.Extensions.Options;
 using my_cv_gen_api.DTOs;
 using my_cv_gen_api.Models;
 
 namespace my_cv_gen_api.Services;
 
-public class GeminiResumeTailorService : IResumeTailorService
+public class GroqResumeTailorService : IResumeTailorService
 {
     private readonly TailorOptions _options;
-    private Client? _client;
+    private GroqApiClient? _client;
 
-    public GeminiResumeTailorService(IOptions<TailorOptions> options)
+    public GroqResumeTailorService(IOptions<TailorOptions> options)
     {
         _options = options.Value;
     }
 
-    private Client GetClient()
+    private GroqApiClient GetClient()
     {
         if (_client != null) return _client;
         var apiKey = _options.ApiKey;
         if (string.IsNullOrEmpty(apiKey))
-            throw new InvalidOperationException("Tailor:ApiKey is required. Set Tailor__ApiKey (Google AI API key) in configuration or environment.");
-        _client = new Client(apiKey: apiKey);
+            throw new InvalidOperationException("Tailor:ApiKey is required. Set Tailor__ApiKey (Groq API key) in configuration or environment.");
+        _client = new GroqApiClient(apiKey);
         return _client;
     }
 
@@ -43,27 +43,24 @@ public class GeminiResumeTailorService : IResumeTailorService
             Preserve original dates from the resume where relevant. Keep ImageUrl if present.
             """;
 
-        var config = new GenerateContentConfig
+        var request = new JsonObject
         {
-            SystemInstruction = new Content
+            ["model"] = _options.Model ?? GroqModels.Llama33_70B,
+            ["temperature"] = 0.3,
+            ["messages"] = new JsonArray
             {
-                Parts = [new Part { Text = systemPrompt }]
-            },
-            Temperature = 0.3
+                new JsonObject { ["role"] = "system", ["content"] = systemPrompt },
+                new JsonObject { ["role"] = "user", ["content"] = userPrompt }
+            }
         };
 
-        var response = await GetClient().Models.GenerateContentAsync(
-            model: _options.Model ?? "gemini-2.0-flash",
-            contents: userPrompt,
-            config: config
-        );
+        var result = await GetClient().CreateChatCompletionAsync(request);
 
-        if (response?.Candidates is not { Count: > 0 } ||
-            response.Candidates[0].Content?.Parts is not { Count: > 0 })
-            throw new InvalidOperationException("Gemini returned no content. The model may have blocked the response or encountered an error.");
+        var content = result?["choices"]?[0]?["message"]?["content"]?.ToString();
+        if (string.IsNullOrEmpty(content))
+            throw new InvalidOperationException("Groq returned no content. The model may have blocked the response or encountered an error.");
 
-        var responseText = response.Candidates[0].Content.Parts[0].Text ?? "";
-        return ParseResponse(responseText, resume);
+        return ParseResponse(content, resume);
     }
 
     private static string GetSystemPrompt()

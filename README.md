@@ -32,8 +32,8 @@ A .NET 9 Web API for CV/Resume generation with user authentication (JWT), Postgr
 - `Jwt__Key` – JWT signing key (min 32 characters); required for auth
 - `Jwt__Issuer` – JWT issuer (default: `my_cv_gen_api`)
 - `Jwt__Audience` – JWT audience (default: `my_cv_gen_api`)
-- `Tailor__ApiKey` – Google Gemini API key (required for CV tailor endpoint; get from [Google AI Studio](https://ai.google.dev/))
-- `Tailor__Model` – Gemini model (default: `gemini-2.0-flash`)
+- `Tailor__ApiKey` – Groq API key (required for CV tailor endpoint; get from [Groq Console](https://console.groq.com/))
+- `Tailor__Model` – Groq model (default: `llama-3.3-70b-versatile`)
 
 ## Running the API
 
