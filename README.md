@@ -6,10 +6,10 @@ A .NET 9 Web API for CV/Resume generation with user authentication (JWT), Postgr
 
 ## Features
 
-- **User authentication** – Register and log in with JWT Bearer tokens
+- **User authentication** – Register and log in with JWT Bearer tokens; optional profile fields (phone, location, GitHub, website) stored per user
 - **Resume CRUD** – Create, read, update, and soft-delete resumes
 - **AI resume tailoring** – Tailor a resume to match a job description using Groq AI (LLaMA)
-- **PDF export** – Download resumes as PDF in 4 template styles
+- **PDF export** – Download resumes as PDF in 4 template styles; PDFs include the user’s name, email, phone, location, GitHub, website, and profile image when set (templates 1, 2, and 4 show the image; template 3 is text-only)
 - **Resume structure** – Work experience, education, languages, projects, and skills
 
 ## Tech Stack
@@ -55,12 +55,16 @@ Register a new user and receive a JWT token.
 
 **Request body:**
 
-| Field      | Type   | Required | Description                    |
-|------------|--------|----------|--------------------------------|
-| firstName  | string | Yes      | User's first name              |
-| lastName   | string | Yes      | User's last name               |
-| email      | string | Yes      | Unique email address           |
-| password   | string | Yes      | User's password                |
+| Field       | Type   | Required | Description                              |
+|-------------|--------|----------|------------------------------------------|
+| firstName   | string | Yes      | User's first name                        |
+| lastName    | string | Yes      | User's last name                         |
+| email       | string | Yes      | Unique email address                     |
+| password    | string | Yes      | User's password                          |
+| phoneNumber | string | No       | User's phone number                      |
+| githubUrl   | string | No       | GitHub profile URL                       |
+| location    | string | No       | Location (e.g. city, country)            |
+| website     | string | No       | Personal or portfolio website URL        |
 
 **Example:**
 
@@ -69,7 +73,11 @@ Register a new user and receive a JWT token.
   "firstName": "Jane",
   "lastName": "Doe",
   "email": "jane@example.com",
-  "password": "SecurePass123"
+  "password": "SecurePass123",
+  "phoneNumber": "+1 234 567 8900",
+  "githubUrl": "https://github.com/janedoe",
+  "location": "London, UK",
+  "website": "https://janedoe.dev"
 }
 ```
 
@@ -85,7 +93,11 @@ Register a new user and receive a JWT token.
     "email": "jane@example.com",
     "createdAt": "2025-02-07T10:00:00Z",
     "updatedAt": "2025-02-07T10:00:00Z",
-    "isActive": true
+    "isActive": true,
+    "phoneNumber": "+1 234 567 8900",
+    "githubUrl": "https://github.com/janedoe",
+    "location": "London, UK",
+    "website": "https://janedoe.dev"
   }
 }
 ```
@@ -126,10 +138,16 @@ Log in and receive a JWT token.
     "email": "jane@example.com",
     "createdAt": "2025-02-07T10:00:00Z",
     "updatedAt": "2025-02-07T10:00:00Z",
-    "isActive": true
+    "isActive": true,
+    "phoneNumber": "+1 234 567 8900",
+    "githubUrl": "https://github.com/janedoe",
+    "location": "London, UK",
+    "website": "https://janedoe.dev"
   }
 }
 ```
+
+Profile fields (`phoneNumber`, `githubUrl`, `location`, `website`) are optional and may be `null` if not set.
 
 **Errors:** `404 Not Found` – invalid email or password
 
@@ -298,7 +316,7 @@ Soft-delete a resume (sets `isActive` to false). Only the owner can delete.
 
 #### GET `/api/resumes/{id}/download`
 
-Download a resume as a PDF file. Only the owner can download.
+Download a resume as a PDF file. Only the owner can download. The PDF is built from the resume data plus the **current user’s profile**: name, email, phone, location, GitHub URL, website, and (on templates 1, 2, 4) profile image. Any of these are included only when set in the user profile or resume (e.g. `imageUrl` is on the resume). Template 3 does not display a profile image.
 
 **Query parameters:**
 
@@ -408,6 +426,28 @@ All resume endpoints return (or include) this structure:
 ```
 
 **Note:** Dates use ISO 8601 format. Request bodies accept `yyyy-MM-dd` strings; responses include full UTC timestamps.
+
+---
+
+### User object in auth responses
+
+Register and login return a `user` object with the following. All profile fields are optional and may be `null`.
+
+| Field       | Type   | Description                    |
+|-------------|--------|--------------------------------|
+| id          | int    | User ID                        |
+| firstName   | string | First name                     |
+| lastName    | string | Last name                      |
+| email       | string | Email address                  |
+| createdAt   | string | ISO 8601 timestamp             |
+| updatedAt   | string | ISO 8601 timestamp             |
+| isActive    | bool   | Account active                 |
+| phoneNumber | string \| null | Phone number            |
+| githubUrl   | string \| null | GitHub profile URL      |
+| location    | string \| null | Location (e.g. city, country) |
+| website     | string \| null | Website URL                |
+
+When a user downloads a resume PDF, these profile values (and the resume’s `imageUrl` when used) are shown on the CV where the template has contact or header sections.
 
 ---
 
