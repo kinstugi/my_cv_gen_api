@@ -59,7 +59,11 @@ public class UserRepository : IUserRepository
             PasswordSalt = salt,
             CreatedAt = now,
             UpdatedAt = now,
-            IsActive = true
+            IsActive = true,
+            PhoneNumber = dto.PhoneNumber,
+            GitHubUrl = dto.GitHubUrl,
+            Location = dto.Location,
+            Website = dto.Website
         };
 
         _context.Users.Add(user);

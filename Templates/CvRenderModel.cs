@@ -12,6 +12,8 @@ public class CvRenderModel
     public string? Email { get; set; }
     public string? Phone { get; set; }
     public string? Location { get; set; }
+    public string? GitHubUrl { get; set; }
+    public string? Website { get; set; }
     public List<string> Skills { get; set; } = [];
     public List<CvLanguage> Languages { get; set; } = [];
     public List<CvWorkExperience> WorkExperiences { get; set; } = [];

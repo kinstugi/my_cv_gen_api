@@ -32,6 +32,8 @@ public class Template3 : ICvTemplate
                     if (!string.IsNullOrEmpty(model.Phone)) row.AutoItem().Text($"📞 {model.Phone}").FontSize(9);
                     if (!string.IsNullOrEmpty(model.Email)) row.AutoItem().Text($"✉️ {model.Email}").FontSize(9);
                     if (!string.IsNullOrEmpty(model.Location)) row.AutoItem().Text($"📍 {model.Location}").FontSize(9);
+                    if (!string.IsNullOrEmpty(model.GitHubUrl)) row.AutoItem().Text($"🔗 {model.GitHubUrl}").FontSize(9);
+                    if (!string.IsNullOrEmpty(model.Website)) row.AutoItem().Text($"🌐 {model.Website}").FontSize(9);
                 });
 
                 // --- PROFILE ---

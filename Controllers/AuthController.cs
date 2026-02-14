@@ -51,6 +51,10 @@ public class AuthController : ControllerBase
         Email = user.Email,
         CreatedAt = user.CreatedAt,
         UpdatedAt = user.UpdatedAt,
-        IsActive = user.IsActive
+        IsActive = user.IsActive,
+        PhoneNumber = user.PhoneNumber,
+        GitHubUrl = user.GitHubUrl,
+        Location = user.Location,
+        Website = user.Website
     };
 }

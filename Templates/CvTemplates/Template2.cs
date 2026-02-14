@@ -157,7 +157,11 @@ public class Template2 : ICvTemplate
                             column.Item().PaddingBottom(5).Text(model.Phone).FontSize(9).FontColor(Colors.White);
                         if (!string.IsNullOrEmpty(model.Email))
                             column.Item().PaddingBottom(5).Text(model.Email).FontSize(9).FontColor(Colors.White);
-                        if (string.IsNullOrEmpty(model.Location) && string.IsNullOrEmpty(model.Phone) && string.IsNullOrEmpty(model.Email))
+                        if (!string.IsNullOrEmpty(model.GitHubUrl))
+                            column.Item().PaddingBottom(5).Text(model.GitHubUrl).FontSize(9).FontColor(Colors.White);
+                        if (!string.IsNullOrEmpty(model.Website))
+                            column.Item().PaddingBottom(5).Text(model.Website).FontSize(9).FontColor(Colors.White);
+                        if (string.IsNullOrEmpty(model.Location) && string.IsNullOrEmpty(model.Phone) && string.IsNullOrEmpty(model.Email) && string.IsNullOrEmpty(model.GitHubUrl) && string.IsNullOrEmpty(model.Website))
                             column.Item().Text("—").FontSize(9).FontColor(Colors.White);
 
                         column.Item().PaddingBottom(30);

@@ -17,6 +17,10 @@ public static class CvRenderModelMapper
             Summary = resume.Description,
             ImageUrl = resume.ImageUrl,
             Email = user?.Email,
+            Phone = user?.PhoneNumber,
+            Location = user?.Location,
+            GitHubUrl = user?.GitHubUrl,
+            Website = user?.Website,
             Skills = resume.Skills.ToList(),
             Languages = resume.Languages.Select(l => new CvLanguage { Name = l.Name, Level = l.Level }).ToList(),
             WorkExperiences = resume.WorkExperiences.Select(w => new CvWorkExperience

@@ -91,7 +91,7 @@ using (var scope = app.Services.CreateScope())
     if (!usersTableExists)
     {
         logger.LogWarning("Users table not found. Creating tables via SQL...");
-        db.Database.ExecuteSqlRaw(@"CREATE TABLE ""Users"" (""Id"" serial PRIMARY KEY, ""FirstName"" varchar(100) NOT NULL, ""LastName"" varchar(100) NOT NULL, ""Email"" varchar(256) NOT NULL, ""PasswordHash"" bytea NOT NULL, ""PasswordSalt"" bytea NOT NULL, ""CreatedAt"" timestamptz NOT NULL, ""UpdatedAt"" timestamptz NOT NULL, ""IsActive"" boolean NOT NULL)");
+        db.Database.ExecuteSqlRaw(@"CREATE TABLE ""Users"" (""Id"" serial PRIMARY KEY, ""FirstName"" varchar(100) NOT NULL, ""LastName"" varchar(100) NOT NULL, ""Email"" varchar(256) NOT NULL, ""PasswordHash"" bytea NOT NULL, ""PasswordSalt"" bytea NOT NULL, ""CreatedAt"" timestamptz NOT NULL, ""UpdatedAt"" timestamptz NOT NULL, ""IsActive"" boolean NOT NULL, ""PhoneNumber"" varchar(50) NULL, ""GitHubUrl"" varchar(500) NULL, ""Location"" varchar(200) NULL, ""Website"" varchar(500) NULL)");
         db.Database.ExecuteSqlRaw(@"CREATE TABLE ""Resumes"" (""Id"" serial PRIMARY KEY, ""UserId"" integer NOT NULL REFERENCES ""Users""(""Id"") ON DELETE CASCADE, ""Title"" varchar(200) NOT NULL, ""Description"" text NOT NULL, ""Skills"" jsonb NOT NULL DEFAULT '[]', ""CreatedAt"" timestamptz NOT NULL, ""UpdatedAt"" timestamptz NOT NULL, ""IsActive"" boolean NOT NULL DEFAULT true, ""ImageUrl"" varchar(500) NULL)");
         db.Database.ExecuteSqlRaw(@"CREATE INDEX ""IX_Resumes_UserId"" ON ""Resumes"" (""UserId"")");
         db.Database.ExecuteSqlRaw(@"CREATE TABLE ""Educations"" (""Id"" serial PRIMARY KEY, ""ResumeId"" integer NOT NULL REFERENCES ""Resumes""(""Id"") ON DELETE CASCADE, ""School"" varchar(200) NOT NULL, ""Degree"" varchar(100) NOT NULL, ""FieldOfStudy"" varchar(200) NOT NULL, ""StartDate"" timestamptz NOT NULL, ""EndDate"" timestamptz NULL)");
@@ -122,6 +122,18 @@ using (var scope = app.Services.CreateScope())
             db.Database.ExecuteSqlRaw(@"ALTER TABLE ""Resumes"" ADD COLUMN ""IsActive"" boolean NOT NULL DEFAULT true");
         }
         
+        // Add optional User profile columns if missing
+        var userPhoneNumberExists = db.Database.SqlQueryRaw<bool>(
+            "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'Users' AND column_name = 'PhoneNumber') AS \"Value\"").FirstOrDefault();
+        if (!userPhoneNumberExists)
+        {
+            logger.LogInformation("Adding PhoneNumber, GitHubUrl, Location, Website columns to Users table...");
+            db.Database.ExecuteSqlRaw(@"ALTER TABLE ""Users"" ADD COLUMN ""PhoneNumber"" varchar(50) NULL");
+            db.Database.ExecuteSqlRaw(@"ALTER TABLE ""Users"" ADD COLUMN ""GitHubUrl"" varchar(500) NULL");
+            db.Database.ExecuteSqlRaw(@"ALTER TABLE ""Users"" ADD COLUMN ""Location"" varchar(200) NULL");
+            db.Database.ExecuteSqlRaw(@"ALTER TABLE ""Users"" ADD COLUMN ""Website"" varchar(500) NULL");
+        }
+
         // Check if WorkExperiences table exists and add IsCurrent column if missing
         var workExperiencesTableExists = db.Database.SqlQueryRaw<bool>(
             "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'WorkExperiences') AS \"Value\"").FirstOrDefault();

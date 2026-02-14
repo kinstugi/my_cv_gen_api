@@ -57,6 +57,8 @@ public class Template4 : ICvTemplate
                                 if (!string.IsNullOrEmpty(model.Phone)) c.Item().Text($"📞 {model.Phone}").FontSize(8);
                                 if (!string.IsNullOrEmpty(model.Email)) c.Item().Text($"✉️ {model.Email}").FontSize(8);
                                 if (!string.IsNullOrEmpty(model.Location)) c.Item().Text($"📍 {model.Location}").FontSize(8);
+                                if (!string.IsNullOrEmpty(model.GitHubUrl)) c.Item().Text($"🔗 {model.GitHubUrl}").FontSize(8);
+                                if (!string.IsNullOrEmpty(model.Website)) c.Item().Text($"🌐 {model.Website}").FontSize(8);
                             });
                         });
                     });

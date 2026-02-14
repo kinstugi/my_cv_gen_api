@@ -53,7 +53,11 @@ public class Template1 : ICvTemplate
                                 c.Item().PaddingBottom(5).Text($"✉️ {model.Email}").FontSize(8);
                             if (!string.IsNullOrEmpty(model.Location))
                                 c.Item().PaddingBottom(5).Text($"📍 {model.Location}").FontSize(8);
-                            if (string.IsNullOrEmpty(model.Phone) && string.IsNullOrEmpty(model.Email) && string.IsNullOrEmpty(model.Location))
+                            if (!string.IsNullOrEmpty(model.GitHubUrl))
+                                c.Item().PaddingBottom(5).Text($"🔗 {model.GitHubUrl}").FontSize(8);
+                            if (!string.IsNullOrEmpty(model.Website))
+                                c.Item().PaddingBottom(5).Text($"🌐 {model.Website}").FontSize(8);
+                            if (string.IsNullOrEmpty(model.Phone) && string.IsNullOrEmpty(model.Email) && string.IsNullOrEmpty(model.Location) && string.IsNullOrEmpty(model.GitHubUrl) && string.IsNullOrEmpty(model.Website))
                                 c.Item().Text("—").FontSize(8);
                         });
 

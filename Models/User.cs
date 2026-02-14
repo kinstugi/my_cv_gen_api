@@ -10,6 +10,10 @@ public class User
     public byte[] PasswordSalt { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    public List<Resume> Resumes { get; } = new List<Resume>();
     public bool IsActive { get; set; } = true;
+    public string? PhoneNumber { get; set; }
+    public string? GitHubUrl { get; set; }
+    public string? Location { get; set; }
+    public string? Website { get; set; }
+    public List<Resume> Resumes { get; } = new List<Resume>();
 }
