@@ -6,7 +6,7 @@ A .NET 9 Web API for CV/Resume generation with user authentication (JWT), Postgr
 
 ## Features
 
-- **User authentication** – Register and log in with JWT Bearer tokens; optional profile fields (phone, location, GitHub, website) stored per user
+- **User authentication** – Register and log in with JWT Bearer tokens; optional profile fields (phone, location, GitHub, website) stored per user; get and update your own profile via `/api/users/me`
 - **Resume CRUD** – Create, read, update, and soft-delete resumes
 - **AI resume tailoring** – Tailor a resume to match a job description using Groq AI (LLaMA)
 - **PDF export** – Download resumes as PDF in 4 template styles; PDFs include the user’s name, email, phone, location, GitHub, website, and profile image when set (templates 1, 2, and 4 show the image; template 3 is text-only)
@@ -150,6 +150,52 @@ Log in and receive a JWT token.
 Profile fields (`phoneNumber`, `githubUrl`, `location`, `website`) are optional and may be `null` if not set.
 
 **Errors:** `404 Not Found` – invalid email or password
+
+---
+
+### User Endpoints (require `Authorization: Bearer <token>`)
+
+Users can retrieve and update their own profile (phone, location, GitHub, website, etc.). The user ID is always derived from the JWT; users can only access and modify their own data.
+
+#### GET `/api/users/me`
+
+Get the current user's profile. Returns the user object (no password or sensitive data).
+
+**Response (200):** `UserResponseDto` object (see structure below)
+
+**Errors:** `401 Unauthorized` – missing or invalid token; `404 Not Found` – user not found or inactive
+
+---
+
+#### PUT `/api/users/me`
+
+Update the current user's profile. Only the authenticated user can update their own profile. All fields are optional; send only the fields you want to change. Use empty string `""` to clear an optional field (e.g. remove GitHub URL).
+
+**Request body:**
+
+| Field       | Type   | Required | Description                              |
+|-------------|--------|----------|------------------------------------------|
+| firstName   | string | No       | User's first name                        |
+| lastName    | string | No       | User's last name                         |
+| phoneNumber | string | No       | Phone number (use `""` to clear)         |
+| githubUrl   | string | No       | GitHub profile URL (use `""` to clear)   |
+| location    | string | No       | Location e.g. city, country (use `""` to clear) |
+| website     | string | No       | Website URL (use `""` to clear)          |
+
+**Example:**
+
+```json
+{
+  "phoneNumber": "+1 234 567 8900",
+  "githubUrl": "https://github.com/janedoe",
+  "location": "London, UK",
+  "website": "https://janedoe.dev"
+}
+```
+
+**Response (200):** Updated `UserResponseDto` object
+
+**Errors:** `401 Unauthorized` – missing or invalid token; `404 Not Found` – user not found or inactive
 
 ---
 
@@ -429,9 +475,9 @@ All resume endpoints return (or include) this structure:
 
 ---
 
-### User object in auth responses
+### User object (`UserResponseDto`)
 
-Register and login return a `user` object with the following. All profile fields are optional and may be `null`.
+Register, login, `GET /api/users/me`, and `PUT /api/users/me` return a `user` object with the following. All profile fields are optional and may be `null`. No password or sensitive data is ever returned.
 
 | Field       | Type   | Description                    |
 |-------------|--------|--------------------------------|
