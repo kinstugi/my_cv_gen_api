@@ -1,6 +1,16 @@
 # My CV Gen API
 
-A .NET 9 Web API for CV/Resume generation with user authentication (JWT), PostgreSQL, and Redis caching. Users can register, log in, and manage their own resumes (create, read, update, soft delete).
+A .NET 9 Web API for CV/Resume generation with user authentication (JWT), PostgreSQL, Redis caching, and AI-powered resume tailoring. Users can register, log in, manage resumes (create, read, update, soft delete), tailor resumes to job descriptions using Groq AI, and download resumes as PDF in multiple templates.
+
+**Live API:** [https://my-cv-gen-api.onrender.com](https://my-cv-gen-api.onrender.com)
+
+## Features
+
+- **User authentication** – Register and log in with JWT Bearer tokens
+- **Resume CRUD** – Create, read, update, and soft-delete resumes
+- **AI resume tailoring** – Tailor a resume to match a job description using Groq AI (LLaMA)
+- **PDF export** – Download resumes as PDF in 4 template styles
+- **Resume structure** – Work experience, education, languages, projects, and skills
 
 ## Tech Stack
 
@@ -9,6 +19,8 @@ A .NET 9 Web API for CV/Resume generation with user authentication (JWT), Postgr
 - JWT (Bearer) authentication
 - PostgreSQL (Entity Framework Core)
 - Redis (distributed caching)
+- Groq AI (resume tailoring)
+- QuestPDF (PDF generation)
 - Docker & Docker Compose
 
 ## Prerequisites
@@ -16,6 +28,388 @@ A .NET 9 Web API for CV/Resume generation with user authentication (JWT), Postgr
 - .NET 9 SDK
 - Docker & Docker Compose (for containerized runs)
 - PostgreSQL (if running locally without Docker)
+
+---
+
+## API Documentation
+
+**Base URL:** `https://my-cv-gen-api.onrender.com` (production) or `http://localhost:8080` (local)
+
+### Authentication
+
+Most endpoints require a JWT Bearer token in the `Authorization` header:
+
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+Obtain a token by registering or logging in via the auth endpoints.
+
+---
+
+### Auth Endpoints (no token required)
+
+#### POST `/api/auth/register`
+
+Register a new user and receive a JWT token.
+
+**Request body:**
+
+| Field      | Type   | Required | Description                    |
+|------------|--------|----------|--------------------------------|
+| firstName  | string | Yes      | User's first name              |
+| lastName   | string | Yes      | User's last name               |
+| email      | string | Yes      | Unique email address           |
+| password   | string | Yes      | User's password                |
+
+**Example:**
+
+```json
+{
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "email": "jane@example.com",
+  "password": "SecurePass123"
+}
+```
+
+**Response (201):**
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "user": {
+    "id": 1,
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "email": "jane@example.com",
+    "createdAt": "2025-02-07T10:00:00Z",
+    "updatedAt": "2025-02-07T10:00:00Z",
+    "isActive": true
+  }
+}
+```
+
+**Errors:** `409 Conflict` – email already exists
+
+---
+
+#### POST `/api/auth/login`
+
+Log in and receive a JWT token.
+
+**Request body:**
+
+| Field    | Type   | Required | Description |
+|----------|--------|----------|-------------|
+| email    | string | Yes      | User's email |
+| password | string | Yes      | User's password |
+
+**Example:**
+
+```json
+{
+  "email": "jane@example.com",
+  "password": "SecurePass123"
+}
+```
+
+**Response (200):**
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "user": {
+    "id": 1,
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "email": "jane@example.com",
+    "createdAt": "2025-02-07T10:00:00Z",
+    "updatedAt": "2025-02-07T10:00:00Z",
+    "isActive": true
+  }
+}
+```
+
+**Errors:** `404 Not Found` – invalid email or password
+
+---
+
+### Resume Endpoints (require `Authorization: Bearer <token>`)
+
+#### GET `/api/resumes`
+
+List the current user's active resumes with pagination.
+
+**Query parameters:**
+
+| Parameter | Type   | Default | Description          |
+|-----------|--------|---------|----------------------|
+| page      | int    | 1       | Page number          |
+| pageSize  | int    | 3       | Items per page       |
+
+**Example:** `GET /api/resumes?page=1&pageSize=5`
+
+**Response (200):** Array of `ResumeResponseDto` objects (see structure below)
+
+---
+
+#### GET `/api/resumes/{id}`
+
+Get a single resume by ID (active resumes only). Accessible without ownership check (for public viewing if needed).
+
+**Response (200):** `ResumeResponseDto` object
+
+**Errors:** `404 Not Found` – resume not found or inactive
+
+---
+
+#### POST `/api/resumes`
+
+Create a new resume for the current user.
+
+**Request body:**
+
+| Field            | Type                    | Required | Description                              |
+|------------------|-------------------------|----------|------------------------------------------|
+| title            | string                  | Yes      | Resume title (e.g. "Software Engineer")  |
+| description      | string                  | Yes      | Professional summary                     |
+| imageUrl         | string                  | No       | URL to profile/headshot image            |
+| workExperiences  | array                   | No       | List of work experience entries          |
+| educations       | array                   | No       | List of education entries                |
+| languages        | array                   | No       | List of languages                        |
+| projects         | array                   | No       | List of projects                         |
+| skills           | array of strings        | No       | List of skills                           |
+
+**Work experience item:**
+
+| Field      | Type    | Required | Description                           |
+|------------|---------|----------|---------------------------------------|
+| company    | string  | Yes      | Company name                          |
+| position   | string  | Yes      | Job title                             |
+| description| string  | Yes      | Role description / achievements       |
+| startDate  | string  | Yes      | ISO 8601 date (e.g. "2020-01-01")     |
+| endDate    | string  | No       | ISO 8601 date or null                 |
+| isCurrent  | boolean | No       | True if currently employed            |
+
+**Education item:**
+
+| Field       | Type   | Required | Description                    |
+|-------------|--------|----------|--------------------------------|
+| school      | string | Yes      | School/university name         |
+| degree      | string | Yes      | Degree type (e.g. "BSc")       |
+| fieldOfStudy| string | Yes      | Field of study                 |
+| startDate   | string | Yes      | ISO 8601 date                  |
+| endDate     | string | No       | ISO 8601 date or null          |
+
+**Language item:**
+
+| Field  | Type   | Required | Description (e.g. "Fluent", "Intermediate") |
+|--------|--------|----------|---------------------------------------------|
+| name   | string | Yes      | Language name                               |
+| level  | string | Yes      | Proficiency level                           |
+
+**Project item:**
+
+| Field       | Type   | Required | Description                  |
+|-------------|--------|----------|------------------------------|
+| title       | string | Yes      | Project title                |
+| description | string | Yes      | Project description          |
+| link        | string | No       | URL to project (GitHub, etc.)|
+
+**Example:**
+
+```json
+{
+  "title": "Software Engineer",
+  "description": "Experienced developer with 5 years in web technologies.",
+  "imageUrl": "https://example.com/photo.jpg",
+  "workExperiences": [
+    {
+      "company": "Acme Corp",
+      "position": "Senior Developer",
+      "description": "Led team of 5 developers.",
+      "startDate": "2020-01-01",
+      "endDate": "2024-12-31",
+      "isCurrent": false
+    }
+  ],
+  "educations": [
+    {
+      "school": "Tech University",
+      "degree": "BSc",
+      "fieldOfStudy": "Computer Science",
+      "startDate": "2015-09-01",
+      "endDate": "2019-06-30"
+    }
+  ],
+  "languages": [
+    { "name": "English", "level": "Fluent" },
+    { "name": "Spanish", "level": "Intermediate" }
+  ],
+  "projects": [
+    {
+      "title": "Open Source Library",
+      "description": "Contributed to popular .NET library.",
+      "link": "https://github.com/example/repo"
+    }
+  ],
+  "skills": ["C#", ".NET", "PostgreSQL", "Redis"]
+}
+```
+
+**Response (200):** `ResumeResponseDto` object (includes `id`, `createdAt`, `updatedAt`, etc.)
+
+---
+
+#### PUT `/api/resumes/{id}`
+
+Update an existing resume. Only the owner can update. All fields are optional; provided fields replace existing data.
+
+**Request body:** Same structure as `ResumeCreateDto`, but all fields optional. Omitted collections (e.g. `workExperiences`) are left unchanged.
+
+| Field            | Type                    | Required | Description                    |
+|------------------|-------------------------|----------|--------------------------------|
+| title            | string                  | No       | Resume title                   |
+| description      | string                  | No       | Professional summary           |
+| imageUrl         | string                  | No       | Profile image URL              |
+| isActive         | boolean                 | No       | Resume active status           |
+| workExperiences  | array                   | No       | Replaces all work experiences  |
+| educations       | array                   | No       | Replaces all educations        |
+| languages        | array                   | No       | Replaces all languages         |
+| projects         | array                   | No       | Replaces all projects          |
+| skills           | array of strings        | No       | Replaces all skills            |
+
+**Response (200):** Updated `ResumeResponseDto` object
+
+**Errors:** `404 Not Found` – resume not found or not owned by user
+
+---
+
+#### DELETE `/api/resumes/{id}`
+
+Soft-delete a resume (sets `isActive` to false). Only the owner can delete.
+
+**Response (200):** Deleted `ResumeResponseDto` object (still returned, but marked inactive)
+
+**Errors:** `404 Not Found` – resume not found or not owned by user
+
+---
+
+#### GET `/api/resumes/{id}/download`
+
+Download a resume as a PDF file. Only the owner can download.
+
+**Query parameters:**
+
+| Parameter | Type   | Default   | Description                               |
+|-----------|--------|-----------|-------------------------------------------|
+| template  | string | template1 | PDF template: `template1`, `template2`, `template3`, `template4` |
+
+**Example:** `GET /api/resumes/1/download?template=template2`
+
+**Response (200):** PDF file (`application/pdf`) with filename `resume-{id}.pdf`
+
+**Errors:** `404 Not Found` – resume not found or not owned by user
+
+---
+
+#### POST `/api/resumes/{id}/tailor`
+
+Tailor a resume to match a job description using Groq AI. Rephrases descriptions and emphasizes relevant skills and achievements. Factual data (companies, dates, schools) is preserved. Only the owner can tailor.
+
+**Request body:**
+
+| Field          | Type   | Required | Description                                                                 |
+|----------------|--------|----------|-----------------------------------------------------------------------------|
+| jobDescription | string | Yes      | Full job posting or description to tailor the resume for                    |
+| createNewCV    | boolean| No       | If `true`, creates a new resume; if `false` (default), updates the existing |
+
+**Example:**
+
+```json
+{
+  "jobDescription": "We are looking for a Senior Software Engineer with 5+ years experience in C#, .NET, and cloud technologies. Strong communication and team leadership skills required.",
+  "createNewCV": false
+}
+```
+
+**Response (200):** `ResumeResponseDto` of the tailored resume (new or updated)
+
+**Errors:**
+- `400 Bad Request` – `jobDescription` is empty
+- `404 Not Found` – resume not found or not owned by user
+
+---
+
+### Other Endpoints
+
+#### GET `/health`
+
+Health check. Returns `{"status":"healthy"}`.
+
+**Response (200):**
+
+```json
+{
+  "status": "healthy"
+}
+```
+
+---
+
+### Resume Response Structure (`ResumeResponseDto`)
+
+All resume endpoints return (or include) this structure:
+
+```json
+{
+  "id": 1,
+  "title": "Software Engineer",
+  "description": "Experienced developer...",
+  "imageUrl": "https://example.com/photo.jpg",
+  "isActive": true,
+  "workExperiences": [
+    {
+      "id": 1,
+      "company": "Acme Corp",
+      "position": "Senior Developer",
+      "description": "Led team of 5 developers.",
+      "startDate": "2020-01-01T00:00:00Z",
+      "endDate": "2024-12-31T00:00:00Z",
+      "isCurrent": false
+    }
+  ],
+  "educations": [
+    {
+      "id": 1,
+      "school": "Tech University",
+      "degree": "BSc",
+      "fieldOfStudy": "Computer Science",
+      "startDate": "2015-09-01T00:00:00Z",
+      "endDate": "2019-06-30T00:00:00Z"
+    }
+  ],
+  "languages": [
+    { "id": 1, "name": "English", "level": "Fluent" }
+  ],
+  "projects": [
+    {
+      "id": 1,
+      "title": "Open Source Library",
+      "description": "Contributed to popular .NET library.",
+      "link": "https://github.com/example/repo"
+    }
+  ],
+  "skills": ["C#", ".NET", "PostgreSQL"],
+  "createdAt": "2025-02-07T10:00:00Z",
+  "updatedAt": "2025-02-07T10:00:00Z"
+}
+```
+
+**Note:** Dates use ISO 8601 format. Request bodies accept `yyyy-MM-dd` strings; responses include full UTC timestamps.
+
+---
 
 ## Configuration
 
@@ -27,13 +421,17 @@ A .NET 9 Web API for CV/Resume generation with user authentication (JWT), Postgr
 
 ### Environment Variables (Docker / Render)
 
-- `ConnectionStrings__DefaultConnection` – PostgreSQL connection string (required on Render; use Internal Database URL)
-- `POSTGRES_PASSWORD` – PostgreSQL password for Docker Compose (default: `postgres`)
-- `Jwt__Key` – JWT signing key (min 32 characters); required for auth
-- `Jwt__Issuer` – JWT issuer (default: `my_cv_gen_api`)
-- `Jwt__Audience` – JWT audience (default: `my_cv_gen_api`)
-- `Tailor__ApiKey` – Groq API key (required for CV tailor endpoint; get from [Groq Console](https://console.groq.com/))
-- `Tailor__Model` – Groq model (default: `llama-3.3-70b-versatile`)
+| Variable                            | Description                                                                 |
+|-------------------------------------|-----------------------------------------------------------------------------|
+| `ConnectionStrings__DefaultConnection` | PostgreSQL connection string (required on Render; use Internal Database URL) |
+| `POSTGRES_PASSWORD`                 | PostgreSQL password for Docker Compose (default: `postgres`)                |
+| `Jwt__Key`                          | JWT signing key (min 32 characters); required for auth                     |
+| `Jwt__Issuer`                       | JWT issuer (default: `my_cv_gen_api`)                                      |
+| `Jwt__Audience`                     | JWT audience (default: `my_cv_gen_api`)                                    |
+| `Tailor__ApiKey`                    | Groq API key (required for tailor endpoint; get from [Groq Console](https://console.groq.com/)) |
+| `Tailor__Model`                     | Groq model (default: `llama-3.3-70b-versatile`)                            |
+
+---
 
 ## Running the API
 
@@ -63,36 +461,7 @@ dotnet restore
 dotnet run
 ```
 
-## API Endpoints
-
-### Auth (no token required)
-
-| Method | Endpoint              | Description |
-|--------|------------------------|-------------|
-| POST   | `/api/auth/register`   | Register; body: `firstName`, `lastName`, `email`, `password`. Returns JWT + user. |
-| POST   | `/api/auth/login`      | Login; body: `email`, `password`. Returns JWT + user. Invalid credentials → 404. |
-
-### Resumes (require `Authorization: Bearer <token>`)
-
-| Method | Endpoint           | Description |
-|--------|--------------------|-------------|
-| GET    | `/api/resumes`     | List current user's active resumes (query: `page`, `pageSize`) |
-| GET    | `/api/resumes/{id}`| Get resume by id (active only) |
-| POST   | `/api/resumes`     | Create a resume for the current user |
-| PUT    | `/api/resumes/{id}`| Update a resume (only if owned by current user) |
-| DELETE | `/api/resumes/{id}`| Soft-delete a resume (only if owned by current user) |
-| GET    | `/api/resumes/{id}/download` | Download resume as PDF (query: `template` = template1–4) |
-| POST   | `/api/resumes/{id}/tailor` | Tailor resume to job description (body: `jobDescription`, `createNewCV` = false) |
-
-### Other
-
-| Method | Endpoint  | Description     |
-|--------|-----------|-----------------|
-| GET    | `/health` | Health check    |
-
-### OpenAPI
-
-In Development, OpenAPI is available at `/openapi/v1.json`.
+---
 
 ## Project Structure
 
@@ -102,4 +471,5 @@ In Development, OpenAPI is available at `/openapi/v1.json`.
 - `Exceptions/` – Custom exceptions (e.g. NotFoundException)
 - `Models/` – Domain entities (User, Resume, Education, WorkExperience, Project, Language)
 - `Repositories/` – Data access (UserRepository, ResumeRepository)
-- `Services/` – JWT generation, password hashing
+- `Services/` – JWT, password hashing, CV PDF generation, AI resume tailoring
+- `Templates/` – PDF templates (template1–4)
