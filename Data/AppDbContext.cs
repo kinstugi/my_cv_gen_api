@@ -10,7 +10,9 @@ public class SkillsJsonConverter : ValueConverter<List<string>, string>
     private static readonly JsonSerializerOptions JsonOptions = new();
 
     public SkillsJsonConverter()
-        : base(ToJson, FromJson)
+        : base(
+            v => ToJson(v),
+            v => FromJson(v))
     {
     }
 
@@ -32,7 +34,9 @@ public class WorkExperienceDescriptionConverter : ValueConverter<List<string>, s
     private static readonly JsonSerializerOptions JsonOptions = new();
 
     public WorkExperienceDescriptionConverter()
-        : base(ToDb, FromDb)
+        : base(
+            v => ToDb(v),
+            v => FromDb(v))
     {
     }
 
