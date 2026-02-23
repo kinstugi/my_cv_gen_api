@@ -7,15 +7,17 @@ namespace my_cv_gen_api.Data;
 
 public class SkillsJsonConverter : ValueConverter<List<string>, string>
 {
+    private static readonly JsonSerializerOptions JsonOptions = new();
+
     public SkillsJsonConverter()
-        : base(v => ToJson(v), v => FromJson(v))
+        : base(ToJson, FromJson)
     {
     }
 
-    private static string ToJson(List<string> list) => JsonSerializer.Serialize(list);
+    private static string ToJson(List<string> list) => JsonSerializer.Serialize(list, JsonOptions);
     private static List<string> FromJson(string json)
     {
-        var list = JsonSerializer.Deserialize<List<string>>(json);
+        var list = JsonSerializer.Deserialize<List<string>>(json, JsonOptions);
         return list ?? new List<string>();
     }
 }
@@ -23,14 +25,18 @@ public class SkillsJsonConverter : ValueConverter<List<string>, string>
 /// <summary>
 /// Converts WorkExperience.Description (List&lt;string&gt;) to/from DB.
 /// Reads both legacy plain text (newline-separated) and new JSON array format so existing CVs keep working.
-/// Writes always as JSON array.
+/// Writes always as JSON array. Uses explicit JsonSerializerOptions to avoid CS0854 (expression tree + optional args).
 /// </summary>
 public class WorkExperienceDescriptionConverter : ValueConverter<List<string>, string>
 {
+    private static readonly JsonSerializerOptions JsonOptions = new();
+
     public WorkExperienceDescriptionConverter()
-        : base(v => JsonSerializer.Serialize(v), v => FromDb(v))
+        : base(ToDb, FromDb)
     {
     }
+
+    private static string ToDb(List<string> v) => JsonSerializer.Serialize(v, JsonOptions);
 
     private static List<string> FromDb(string value)
     {
@@ -40,7 +46,7 @@ public class WorkExperienceDescriptionConverter : ValueConverter<List<string>, s
         // New format: JSON array e.g. ["bullet1","bullet2"]
         if (trimmed.StartsWith('['))
         {
-            var list = JsonSerializer.Deserialize<List<string>>(value);
+            var list = JsonSerializer.Deserialize<List<string>>(value, JsonOptions);
             return list ?? new List<string>();
         }
         // Legacy format: plain text, possibly newline-separated

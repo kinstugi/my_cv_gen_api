@@ -171,7 +171,7 @@ public class ResumeController : ControllerBase
         if (resume is null)
             return NotFound();
 
-        var pdfBytes = _cvPdfService.GeneratePdf(resume, resume.User, template);
+        var pdfBytes = _cvPdfService.GeneratePdf(resume, resume.User, template ?? "template1");
         var fileName = $"resume-{id}.pdf";
         return File(pdfBytes, "application/pdf", fileName);
     }
