@@ -20,6 +20,36 @@ public class SkillsJsonConverter : ValueConverter<List<string>, string>
     }
 }
 
+/// <summary>
+/// Converts WorkExperience.Description (List&lt;string&gt;) to/from DB.
+/// Reads both legacy plain text (newline-separated) and new JSON array format so existing CVs keep working.
+/// Writes always as JSON array.
+/// </summary>
+public class WorkExperienceDescriptionConverter : ValueConverter<List<string>, string>
+{
+    public WorkExperienceDescriptionConverter()
+        : base(v => JsonSerializer.Serialize(v), v => FromDb(v))
+    {
+    }
+
+    private static List<string> FromDb(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return new List<string>();
+        var trimmed = value.Trim();
+        // New format: JSON array e.g. ["bullet1","bullet2"]
+        if (trimmed.StartsWith('['))
+        {
+            var list = JsonSerializer.Deserialize<List<string>>(value);
+            return list ?? new List<string>();
+        }
+        // Legacy format: plain text, possibly newline-separated
+        return trimmed
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
+    }
+}
+
 public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options)
@@ -70,5 +100,12 @@ public class AppDbContext : DbContext
             .Property(r => r.Skills)
             .HasConversion(new SkillsJsonConverter())
             .HasColumnType("jsonb");
+
+        // WorkExperience.Description: List<string> stored as text (JSON array).
+        // Converter accepts both legacy plain text (newline-separated) and JSON for existing rows.
+        modelBuilder.Entity<WorkExperience>()
+            .Property(w => w.Description)
+            .HasConversion(new WorkExperienceDescriptionConverter())
+            .HasColumnType("text");
     }
 }

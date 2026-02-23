@@ -27,7 +27,7 @@ public static class CvRenderModelMapper
             {
                 Company = w.Company,
                 Position = w.Position,
-                Description = w.Description,
+                Description = string.Join("\n", w.Description ?? new List<string>()),
                 StartDate = w.StartDate,
                 EndDate = w.EndDate,
                 IsCurrent = w.IsCurrent

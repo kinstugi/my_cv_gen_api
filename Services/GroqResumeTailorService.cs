@@ -118,7 +118,7 @@ public class GroqResumeTailorService : IResumeTailorService
         {
             w.Company,
             w.Position,
-            w.Description,
+            Description = string.Join("\n", w.Description ?? new List<string>()),
             StartDate = w.StartDate.ToString("yyyy-MM-dd"),
             EndDate = w.EndDate?.ToString("yyyy-MM-dd"),
             w.IsCurrent
