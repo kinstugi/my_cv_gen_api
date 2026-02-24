@@ -49,7 +49,7 @@ public class ResumeController : ControllerBase
                 Id = w.Id,
                 Company = w.Company,
                 Position = w.Position,
-                Description = string.Join("\n", w.Description ?? new List<string>()),
+                Description = w.Description?.ToList() ?? new List<string>(),
                 StartDate = w.StartDate,
                 EndDate = w.EndDate,
                 IsCurrent = w.IsCurrent

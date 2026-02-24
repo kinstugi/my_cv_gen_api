@@ -247,14 +247,14 @@ Create a new resume for the current user.
 
 **Work experience item:**
 
-| Field      | Type    | Required | Description                           |
-|------------|---------|----------|---------------------------------------|
-| company    | string  | Yes      | Company name                          |
-| position   | string  | Yes      | Job title                             |
-| description| string  | Yes      | Role description / achievements       |
-| startDate  | string  | Yes      | ISO 8601 date (e.g. "2020-01-01")     |
-| endDate    | string  | No       | ISO 8601 date or null                 |
-| isCurrent  | boolean | No       | True if currently employed            |
+| Field       | Type              | Required | Description                                         |
+|-------------|-------------------|----------|-----------------------------------------------------|
+| company     | string            | Yes      | Company name                                        |
+| position    | string            | Yes      | Job title                                           |
+| description | array of strings  | Yes      | Bullet points describing responsibilities/results   |
+| startDate   | string            | Yes      | ISO 8601 date (e.g. "2020-01-01")                   |
+| endDate     | string            | No       | ISO 8601 date or null                               |
+| isCurrent   | boolean           | No       | True if currently employed                          |
 
 **Education item:**
 

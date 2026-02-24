@@ -56,15 +56,13 @@ public class ResumeRepository : IResumeRepository
         // Add WorkExperiences
         foreach (var weDto in dto.WorkExperiences)
         {
-            var bullets = (weDto.Description ?? string.Empty)
-                .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .ToList();
+            var bullets = weDto.Description ?? new List<string>();
 
             resume.WorkExperiences.Add(new WorkExperience
             {
                 Company = weDto.Company,
                 Position = weDto.Position,
-                Description = bullets,
+                Description = bullets.ToList(),
                 StartDate = ToUtc(weDto.StartDate),
                 EndDate = ToUtc(weDto.EndDate),
                 IsCurrent = weDto.IsCurrent,
@@ -180,15 +178,13 @@ public class ResumeRepository : IResumeRepository
             resume.WorkExperiences.Clear();
             foreach (var weDto in dto.WorkExperiences)
             {
-                var bullets = (weDto.Description ?? string.Empty)
-                    .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                    .ToList();
+                var bullets = weDto.Description ?? new List<string>();
 
                 resume.WorkExperiences.Add(new WorkExperience
                 {
                     Company = weDto.Company,
                     Position = weDto.Position,
-                    Description = bullets,
+                    Description = bullets.ToList(),
                     StartDate = ToUtc(weDto.StartDate),
                     EndDate = ToUtc(weDto.EndDate),
                     IsCurrent = weDto.IsCurrent,

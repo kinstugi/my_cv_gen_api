@@ -187,11 +187,16 @@ public class GroqResumeTailorService : IResumeTailorService
         if (!root.TryGetProperty("workExperiences", out var arr)) return list;
         foreach (var item in arr.EnumerateArray())
         {
+            var descStr = item.GetProperty("description").GetString() ?? string.Empty;
+            var bullets = descStr
+                .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList();
+
             list.Add(new WorkExperienceCreateDto
             {
                 Company = item.GetProperty("company").GetString() ?? "",
                 Position = item.GetProperty("position").GetString() ?? "",
-                Description = item.GetProperty("description").GetString() ?? "",
+                Description = bullets,
                 StartDate = ParseDate(item, "startDate"),
                 EndDate = ParseDateNullable(item, "endDate"),
                 IsCurrent = item.TryGetProperty("isCurrent", out var ic) && ic.GetBoolean()
