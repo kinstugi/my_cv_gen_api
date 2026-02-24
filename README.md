@@ -292,7 +292,10 @@ Create a new resume for the current user.
     {
       "company": "Acme Corp",
       "position": "Senior Developer",
-      "description": "Led team of 5 developers.",
+      "description": [
+        "Led team of 5 developers.",
+        "Improved system performance by 30% through query optimization."
+      ],
       "startDate": "2020-01-01",
       "endDate": "2024-12-31",
       "isCurrent": false
@@ -438,7 +441,10 @@ All resume endpoints return (or include) this structure:
       "id": 1,
       "company": "Acme Corp",
       "position": "Senior Developer",
-      "description": "Led team of 5 developers.",
+      "description": [
+        "Led team of 5 developers.",
+        "Improved system performance by 30% through query optimization."
+      ],
       "startDate": "2020-01-01T00:00:00Z",
       "endDate": "2024-12-31T00:00:00Z",
       "isCurrent": false
