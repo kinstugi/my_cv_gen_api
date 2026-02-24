@@ -77,7 +77,11 @@ public class GroqResumeTailorService : IResumeTailorService
                 {
                   "company": "string",
                   "position": "string",
-                  "description": "tailored description emphasizing relevant achievements",
+                  "description": [
+                    "bullet 1 emphasizing relevant achievements for this role",
+                    "bullet 2 with concrete impact or metrics",
+                    "bullet 3 focusing on technologies or responsibilities"
+                  ],
                   "startDate": "yyyy-MM-dd",
                   "endDate": "yyyy-MM-dd or null",
                   "isCurrent": false
@@ -106,6 +110,7 @@ public class GroqResumeTailorService : IResumeTailorService
             Rules:
             - Preserve all factual data (companies, dates, schools, etc). Only rephrase descriptions and reorder/emphasize to match the job.
             - Use the exact date format yyyy-MM-dd. For endDate use null if current.
+            - For each work experience, return the \"description\" as an array of 3–6 concise bullet strings (not one long paragraph).
             - Emphasize skills and achievements most relevant to the job description.
             - Keep the same number of work experiences, educations, projects unless the job clearly demands different focus.
             - Output ONLY the JSON object, no markdown or explanation.
@@ -118,7 +123,7 @@ public class GroqResumeTailorService : IResumeTailorService
         {
             w.Company,
             w.Position,
-            Description = string.Join("\n", w.Description ?? new List<string>()),
+            Description = w.Description ?? new List<string>(),
             StartDate = w.StartDate.ToString("yyyy-MM-dd"),
             EndDate = w.EndDate?.ToString("yyyy-MM-dd"),
             w.IsCurrent
@@ -187,10 +192,26 @@ public class GroqResumeTailorService : IResumeTailorService
         if (!root.TryGetProperty("workExperiences", out var arr)) return list;
         foreach (var item in arr.EnumerateArray())
         {
-            var descStr = item.GetProperty("description").GetString() ?? string.Empty;
-            var bullets = descStr
-                .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .ToList();
+            var bullets = new List<string>();
+            if (item.TryGetProperty("description", out var descElem))
+            {
+                if (descElem.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var el in descElem.EnumerateArray())
+                    {
+                        var s = el.GetString();
+                        if (!string.IsNullOrWhiteSpace(s))
+                            bullets.Add(s.Trim());
+                    }
+                }
+                else if (descElem.ValueKind == JsonValueKind.String)
+                {
+                    var descStr = descElem.GetString() ?? string.Empty;
+                    bullets = descStr
+                        .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .ToList();
+                }
+            }
 
             list.Add(new WorkExperienceCreateDto
             {
