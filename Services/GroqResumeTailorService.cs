@@ -71,6 +71,8 @@ public class GroqResumeTailorService : IResumeTailorService
 
             Core Constraints:
 
+            Keyword Alignment: Extract the most important keywords from the job description (technologies, tools, methodologies, competencies, and role-specific terms). Weave a sufficient number of these keywords into the tailored resume: in the summary (description), in work experience bullets, in project descriptions, and in the skills array. Use the JD’s exact phrasing where it fits naturally so the resume aligns with what recruiters and ATS look for. Do not stuff keywords unnaturally; only use them where they truthfully reflect the candidate’s experience.
+
             Value-Driven Summary: Create a summary in the "description" field that is strictly 2-3 lines long. Instead of a tech-stack list, focus on the candidate's value proposition: what they bring to the company, their professional maturity, and their ability to solve the specific problems outlined in the JD. Mention a core skill only if it defines their professional identity.
 
             STAR Method Experience: In the professional_experience / workExperiences array, rewrite all highlights using the STAR method (Situation, Task, Action, Result). Each point must focus on a specific technical Action and a quantifiable Result (e.g., %, time saved, or performance metrics). Keep each bullet punchy; avoid walls of text.
