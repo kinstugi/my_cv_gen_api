@@ -17,6 +17,18 @@ builder.WebHost.UseUrls(urls);
 // Add services to the container.
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
+
+// CORS: allow frontend origin (e.g. Firebase). Configure via Cors__Origins (semicolon-separated) or default.
+var corsOrigins = builder.Configuration["Cors:Origins"] ?? "https://my-cv-gen-frontend.web.app";
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins(corsOrigins.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -168,6 +180,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseCors();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
