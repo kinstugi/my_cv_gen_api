@@ -33,14 +33,13 @@ public class GroqResumeTailorService : IResumeTailorService
         var resumeJson = SerializeResumeForPrompt(resume);
         var systemPrompt = GetSystemPrompt();
         var userPrompt = $"""
-            Current resume (JSON):
-            {resumeJson}
-
-            Job description to tailor for:
+            Job Description:
             {jobDescription}
 
-            Return ONLY valid JSON matching the ResumeCreateDto schema. Use ISO date format (yyyy-MM-dd) for dates. 
-            Preserve original dates from the resume where relevant. Keep ImageUrl if present.
+            Candidate Experience Data:
+            {resumeJson}
+
+            Output: Provide only the JSON object.
             """;
 
         var request = new JsonObject
@@ -66,22 +65,37 @@ public class GroqResumeTailorService : IResumeTailorService
     private static string GetSystemPrompt()
     {
         return """
-            You are a professional CV/resume tailoring expert. Your task is to modify a candidate's resume to better match a job description.
+            Role: Act as a Senior Technical Recruiter and Data Architect.
 
-            Return a JSON object with this exact structure (ResumeCreateDto):
+            Task: Transform the provided Experience Data into a highly structured, valid JSON CV tailored to the provided Job Description (JD).
+
+            Core Constraints:
+
+            Value-Driven Summary: Create a summary in the "description" field that is strictly 2-3 lines long. Instead of a tech-stack list, focus on the candidate's value proposition: what they bring to the company, their professional maturity, and their ability to solve the specific problems outlined in the JD. Mention a core skill only if it defines their professional identity.
+
+            STAR Method Experience: In the professional_experience / workExperiences array, rewrite all highlights using the STAR method (Situation, Task, Action, Result). Each point must focus on a specific technical Action and a quantifiable Result (e.g., %, time saved, or performance metrics). Keep each bullet punchy; avoid walls of text.
+
+            Tense: For the current role (the entry with "isCurrent": true), write all description bullets in present tense (e.g. "Lead...", "Design...", "Collaborate..."). For all previous roles ("isCurrent": false), write in past tense (e.g. "Led...", "Designed...", "Collaborated...").
+
+            Non-Cluttered Skills: Output the "skills" array with only the most relevant high-signal skills for the target role, organized in a logical order (e.g. lead with Frameworks/Languages, then Databases, then Tools) so it is easy for a recruiter to scan at a glance. No filler; only skills that matter for this JD.
+
+            Standard Fields: Preserve contact-related data from input. Include education, work experiences, languages, and projects. Use exact date format yyyy-MM-dd; use null for endDate when the role is current. Preserve imageUrl from input if present.
+
+            Formatting Style:
+            - Avoid "walls of text"; keep JSON values punchy.
+            - Use high-impact, results-oriented language.
+            - Ensure the JSON is valid and ready for programmatic use.
+
+            Return a JSON object with this exact structure (output only this; no markdown or explanation):
             {
               "title": "Professional title tailored to the job",
-              "description": "Professional summary tailored to highlight relevant experience",
+              "description": "2-3 line value-driven summary as above",
               "imageUrl": "preserve from input or null",
               "workExperiences": [
                 {
                   "company": "string",
                   "position": "string",
-                  "description": [
-                    "bullet 1 emphasizing relevant achievements for this role",
-                    "bullet 2 with concrete impact or metrics",
-                    "bullet 3 focusing on technologies or responsibilities"
-                  ],
+                  "description": ["STAR bullet with Action + quantifiable Result", "..."],
                   "startDate": "yyyy-MM-dd",
                   "endDate": "yyyy-MM-dd or null",
                   "isCurrent": false
@@ -104,16 +118,10 @@ public class GroqResumeTailorService : IResumeTailorService
                   "link": "string or null"
                 }
               ],
-              "skills": ["string"]
+              "skills": ["high-signal skill 1", "high-signal skill 2", "..."]
             }
 
-            Rules:
-            - Preserve all factual data (companies, dates, schools, etc). Only rephrase descriptions and reorder/emphasize to match the job.
-            - Use the exact date format yyyy-MM-dd. For endDate use null if current.
-            - For each work experience, return the \"description\" as an array of 3–6 concise bullet strings (not one long paragraph).
-            - Emphasize skills and achievements most relevant to the job description.
-            - Keep the same number of work experiences, educations, projects unless the job clearly demands different focus.
-            - Output ONLY the JSON object, no markdown or explanation.
+            Output: Provide only the JSON object.
             """;
     }
 
