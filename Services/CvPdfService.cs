@@ -27,6 +27,9 @@ public class CvPdfService : ICvPdfService
             "template2" or "2" => new Template2(),
             "template3" or "3" => new Template3(),
             "template4" or "4" => new Template4(),
+            "template5" or "5" => new Template5(),
+            "template6" or "6" => new Template6(),
+            "template7" or "7" => new Template7(),
             _ => new Template1()
         };
     }
