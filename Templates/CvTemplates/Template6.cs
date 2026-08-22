@@ -24,7 +24,7 @@ public class Template6 : ICvTemplate
             {
                 root.Item().Background(Colors.White)
                     .Padding(0)
-                    .Element(PageBody, model);
+                    .Element(c => PageBody(c, model));
             });
         });
     }
@@ -47,8 +47,8 @@ public class Template6 : ICvTemplate
                     {
                         c.Width(90)
                          .Height(90)
-                         .Border(1, "#cccccc")
-                         .CornerRadius(45)
+                         .Border(1)
+                         .BorderColor("#cccccc")
                          .Background("#cccccc")
                          .AlignCenter()
                          .AlignMiddle()
@@ -164,8 +164,7 @@ public class Template6 : ICvTemplate
                             header.Item().Text(model.Title)
                                 .FontSize(11)
                                 .FontColor("#888888")
-                                .LetterSpacing(2f)
-                                .Caps();
+                                .LetterSpacing(2f);
                         }
                     });
 
@@ -188,7 +187,7 @@ public class Template6 : ICvTemplate
                             .FontSize(10.5f)
                             .FontColor("#555555")
                             .LineHeight(1.6f)
-                            .AlignJustify();
+                            .Justify();
                     }
 
                     // Work Experience
@@ -253,4 +252,3 @@ public class Template6 : ICvTemplate
         });
     }
 }
-

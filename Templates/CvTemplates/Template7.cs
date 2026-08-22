@@ -47,7 +47,6 @@ public class Template7 : ICvTemplate
                 {
                     c.Width(100)
                      .Height(100)
-                     .CornerRadius(50)
                      .Background("#dddddd")
                      .AlignCenter()
                      .AlignMiddle()
@@ -150,7 +149,7 @@ public class Template7 : ICvTemplate
                         .FontSize(9.5f)
                         .FontColor("#555555")
                         .LineHeight(1.6f)
-                        .AlignJustify();
+                        .Justify();
                 }
 
                 // Education
@@ -200,14 +199,14 @@ public class Template7 : ICvTemplate
 
     private static void SectionHeader(IContainer container, string title)
     {
-        container.Text(title)
+        container.BorderBottom(1.5f)
+            .BorderColor("#cccccc")
+            .PaddingBottom(4)
+            .Text(title)
             .FontFamily(Fonts.TimesNewRoman)
             .FontSize(12)
             .Bold()
-            .FontColor("#111111")
-            .PaddingBottom(4)
-            .BorderBottom(1.5f)
-            .BorderColor("#cccccc");
+            .FontColor("#111111");
     }
 
     private static void ContactPill(ColumnDescriptor col, string icon, string value)
@@ -218,7 +217,6 @@ public class Template7 : ICvTemplate
             {
                 c.Width(20)
                  .Height(20)
-                 .CornerRadius(10)
                  .Background("#222222")
                  .AlignCenter()
                  .AlignMiddle()
@@ -233,4 +231,3 @@ public class Template7 : ICvTemplate
         });
     }
 }
-

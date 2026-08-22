@@ -42,7 +42,8 @@ public class Template5 : ICvTemplate
                             side.Item().AlignCenter().Element(c =>
                             {
                                 c.Width(80).Height(80)
-                                    .Border(3, "#4a5568")
+                                    .Border(3)
+                                    .BorderColor("#4a5568")
                                     .Background("#4a5568")
                                     .AlignCenter()
                                     .AlignMiddle()
@@ -91,7 +92,7 @@ public class Template5 : ICvTemplate
                                 {
                                     foreach (var edu in model.Educations)
                                     {
-                                        var years = $"{edu.StartDate:yyyy} - {(edu.EndDate?.ToString(\"yyyy\") ?? \"Present\")}";
+                                        var years = $"{edu.StartDate:yyyy} - {(edu.EndDate?.ToString("yyyy") ?? "Present")}";
                                         c.Item().Text(years)
                                             .FontSize(8)
                                             .FontColor(BodyColor);
@@ -168,8 +169,7 @@ public class Template5 : ICvTemplate
                                     header.Item().Text(model.Title)
                                         .FontSize(10)
                                         .FontColor("#718096")
-                                        .LetterSpacing(2f)
-                                        .Caps();
+                                        .LetterSpacing(2f);
                                 }
 
                                 if (!string.IsNullOrEmpty(model.Summary))
@@ -202,10 +202,9 @@ public class Template5 : ICvTemplate
                                         expRow.ConstantItem(14).AlignTop().Element(c =>
                                         {
                                             c.Width(10).Height(10)
-                                                .Border(2, "#a0aec0")
+                                                .Border(2)
                                                 .BorderColor("#a0aec0")
-                                                .Background(Colors.White)
-                                                .CornerRadius(5);
+                                                .Background(Colors.White);
                                         });
 
                                         // Details
@@ -250,4 +249,3 @@ public class Template5 : ICvTemplate
         });
     }
 }
-
