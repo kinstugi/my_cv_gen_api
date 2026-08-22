@@ -520,7 +520,7 @@ When a user downloads a resume PDF, these profile values (and the resume’s `im
 | `Jwt__Key`                          | JWT signing key (min 32 characters); required for auth                     |
 | `Jwt__Issuer`                       | JWT issuer (default: `my_cv_gen_api`)                                      |
 | `Jwt__Audience`                     | JWT audience (default: `my_cv_gen_api`)                                    |
-| `Tailor__ApiKey`                    | Groq API key (required for tailor endpoint; get from [Groq Console](https://console.groq.com/)) |
+| `Tailor__ApiKey`                    | Groq API key (required for PDF import and tailoring; get from [Groq Console](https://console.groq.com/)) |
 | `Tailor__Model`                     | Groq model (default: `llama-3.3-70b-versatile`)                            |
 
 ---

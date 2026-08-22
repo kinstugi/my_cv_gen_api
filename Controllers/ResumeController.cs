@@ -17,12 +17,18 @@ public class ResumeController : ControllerBase
     private readonly IResumeRepository _resumeRepository;
     private readonly ICvPdfService _cvPdfService;
     private readonly IResumeTailorService _tailorService;
+    private readonly IGroqResumeImportService _groqResumeImportService;
 
-    public ResumeController(IResumeRepository resumeRepository, ICvPdfService cvPdfService, IResumeTailorService tailorService)
+    public ResumeController(
+        IResumeRepository resumeRepository,
+        ICvPdfService cvPdfService,
+        IResumeTailorService tailorService,
+        IGroqResumeImportService groqResumeImportService)
     {
         _resumeRepository = resumeRepository;
         _cvPdfService = cvPdfService;
         _tailorService = tailorService;
+        _groqResumeImportService = groqResumeImportService;
     }
 
     private int? GetCurrentUserId()
@@ -87,6 +93,20 @@ public class ResumeController : ControllerBase
         if (userId is null) return Unauthorized();
         var resume = await _resumeRepository.CreateResumeAsync(dto, userId.Value);
         return Ok(ToResumeResponseDto(resume));
+    }
+
+    [HttpPost("import")]
+    [RequestSizeLimit(10 * 1024 * 1024)]
+    public async Task<IActionResult> ImportResume([FromForm] IFormFile file, CancellationToken cancellationToken = default)
+    {
+        if (file is null || file.Length == 0)
+            return BadRequest(new { error = "A PDF file is required." });
+        if (!string.Equals(file.ContentType, "application/pdf", StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { error = "Only PDF files are supported." });
+
+        await using var stream = file.OpenReadStream();
+        var extractedResume = await _groqResumeImportService.ExtractResumeAsync(stream, cancellationToken);
+        return new JsonResult(extractedResume);
     }
 
     [HttpGet("{id}")]
