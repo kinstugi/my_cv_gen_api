@@ -12,6 +12,9 @@ RUN dotnet publish -c Release -o /app/publish --no-restore
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
+# Render has a low inotify instance limit; polling avoids configuration watcher startup failures.
+ENV DOTNET_USE_POLLING_FILE_WATCHER=1
+
 COPY --from=build /app/publish .
 EXPOSE 8080
 EXPOSE 8081
