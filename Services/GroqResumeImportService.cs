@@ -29,7 +29,7 @@ public class GroqResumeImportService : IGroqResumeImportService
 
         var request = new JsonObject
         {
-            ["model"] = _options.Model ?? GroqModels.Llama33_70B,
+            ["model"] = _options.Model ?? "openai/gpt-oss-120b",
             ["temperature"] = 0.2,
             ["messages"] = new JsonArray
             {

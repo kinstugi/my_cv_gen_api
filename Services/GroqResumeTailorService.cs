@@ -44,7 +44,7 @@ public class GroqResumeTailorService : IResumeTailorService
 
         var request = new JsonObject
         {
-            ["model"] = _options.Model ?? GroqModels.Llama33_70B,
+            ["model"] = _options.Model ?? "openai/gpt-oss-120b",
             ["temperature"] = 0.3,
             ["messages"] = new JsonArray
             {
