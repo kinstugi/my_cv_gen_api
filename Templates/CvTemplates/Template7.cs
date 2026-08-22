@@ -104,16 +104,32 @@ public class Template7 : ICvTemplate
                             if (!string.IsNullOrEmpty(exp.Description))
                             {
                                 expCol.Item().PaddingTop(2)
-                                    .Text(exp.Description)
-                                    .FontSize(9.5f)
-                                    .FontColor("#666666")
-                                    .LineHeight(1.5f);
+                                    .Text(string.Join("\n", exp.Description.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(b => $"• {b}")))
+                                    .FontSize(9.5f).FontColor("#666666").LineHeight(1.5f);
                             }
                         });
                     }
                 }
 
-                // References: not modeled in CvRenderModel; omit rather than fabricate.
+                if (model.Projects?.Count > 0)
+                {
+                    col.Item().PaddingTop(24).Element(c => SectionHeader(c, "Projects"));
+                    foreach (var project in model.Projects)
+                    {
+                        col.Item().PaddingTop(8).Column(projectCol =>
+                        {
+                            projectCol.Item().Row(r =>
+                            {
+                                r.RelativeItem().Text(project.Title).FontSize(10.5f).Bold().FontColor("#111111");
+                                if (!string.IsNullOrWhiteSpace(project.Link))
+                                    r.AutoItem().Text(project.Link).FontSize(8).FontColor("#2563eb").Underline();
+                            });
+                            if (!string.IsNullOrWhiteSpace(project.Description))
+                                projectCol.Item().PaddingTop(2).Text(project.Description)
+                                    .FontSize(9.5f).FontColor("#666666").LineHeight(1.5f);
+                        });
+                    }
+                }
             });
     }
 
@@ -136,6 +152,8 @@ public class Template7 : ICvTemplate
                         ContactPill(contactCol, "✉️", model.Email);
                     if (!string.IsNullOrEmpty(model.Website))
                         ContactPill(contactCol, "🌐", model.Website);
+                    if (!string.IsNullOrEmpty(model.GitHubUrl))
+                        ContactPill(contactCol, "🔗", model.GitHubUrl);
                     if (!string.IsNullOrEmpty(model.Location))
                         ContactPill(contactCol, "📍", model.Location);
                 });

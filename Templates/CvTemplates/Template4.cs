@@ -150,6 +150,8 @@ public class Template4 : ICvTemplate
                                 main.Item().PaddingBottom(10).Column(pCol =>
                                 {
                                     pCol.Item().Text(proj.Title).Bold().FontSize(9);
+                                    if (!string.IsNullOrWhiteSpace(proj.Link))
+                                        pCol.Item().Text(proj.Link).FontSize(8).FontColor("#2563eb").Underline();
                                     if (!string.IsNullOrEmpty(proj.Description))
                                         pCol.Item().Text(proj.Description).FontSize(8).LineHeight(1.1f);
                                 });

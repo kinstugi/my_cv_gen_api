@@ -76,9 +76,15 @@ public class Template6 : ICvTemplate
                             ContactRow(c, "✉️", model.Email);
                         if (!string.IsNullOrEmpty(model.Location))
                             ContactRow(c, "📍", model.Location);
+                        if (!string.IsNullOrEmpty(model.GitHubUrl))
+                            ContactRow(c, "🔗", model.GitHubUrl);
+                        if (!string.IsNullOrEmpty(model.Website))
+                            ContactRow(c, "🌐", model.Website);
                         if (string.IsNullOrEmpty(model.Phone) &&
                             string.IsNullOrEmpty(model.Email) &&
-                            string.IsNullOrEmpty(model.Location))
+                            string.IsNullOrEmpty(model.Location) &&
+                            string.IsNullOrEmpty(model.GitHubUrl) &&
+                            string.IsNullOrEmpty(model.Website))
                         {
                             c.Item().Text("—").FontSize(9).FontColor("#777777");
                         }
@@ -109,7 +115,7 @@ public class Template6 : ICvTemplate
                                             .FontSize(9)
                                             .FontColor("#555555")
                                             .Italic();
-                                        var yearText = edu.EndDate?.ToString("yyyy") ?? edu.StartDate.ToString("yyyy");
+                                        var yearText = $"{edu.StartDate:yyyy} – {(edu.EndDate?.ToString("yyyy") ?? "Present")}";
                                         col.Item().Text(yearText)
                                             .FontSize(8.5f)
                                             .FontColor("#777777");
@@ -138,6 +144,25 @@ public class Template6 : ICvTemplate
                                     r.RelativeItem().Text(skill).FontSize(9.5f).FontColor("#333333");
                                 });
                             }
+                        });
+                    }
+
+                    if (model.Languages?.Count > 0)
+                    {
+                        side.Item().PaddingTop(18);
+                        side.Item().Text("Languages")
+                            .FontSize(11).Bold().FontColor("#111111");
+                        side.Item().PaddingTop(6).Column(c =>
+                        {
+                            foreach (var language in model.Languages)
+                                c.Item().Row(r =>
+                                {
+                                    r.ConstantItem(10).Text("•").FontSize(10).FontColor("#555555");
+                                    r.RelativeItem().Text(string.IsNullOrWhiteSpace(language.Level)
+                                        ? language.Name
+                                        : $"{language.Name} ({language.Level})")
+                                        .FontSize(9.5f).FontColor("#333333");
+                                });
                         });
                     }
 
@@ -227,13 +252,34 @@ public class Template6 : ICvTemplate
                                     {
                                         foreach (var bullet in bullets)
                                         {
-                                            descCol.Item().Text(bullet.Trim())
+                                            descCol.Item().Text($"• {bullet.Trim()}")
                                                 .FontSize(10)
                                                 .FontColor("#555555")
                                                 .LineHeight(1.6f);
                                         }
                                     });
                                 }
+                            });
+                        }
+                    }
+
+                    if (model.Projects?.Count > 0)
+                    {
+                        main.Item().PaddingTop(20).Text("Projects")
+                            .FontSize(12).Bold().FontColor("#111111");
+                        foreach (var project in model.Projects)
+                        {
+                            main.Item().PaddingTop(8).Column(projectCol =>
+                            {
+                                projectCol.Item().Row(r =>
+                                {
+                                    r.RelativeItem().Text(project.Title).FontSize(11).Bold().FontColor("#111111");
+                                    if (!string.IsNullOrWhiteSpace(project.Link))
+                                        r.AutoItem().Text(project.Link).FontSize(8).FontColor("#2563eb").Underline();
+                                });
+                                if (!string.IsNullOrWhiteSpace(project.Description))
+                                    projectCol.Item().PaddingTop(3).Text(project.Description)
+                                        .FontSize(9.5f).FontColor("#555555").LineHeight(1.5f);
                             });
                         }
                     }
